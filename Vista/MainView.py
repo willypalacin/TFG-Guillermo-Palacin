@@ -8,7 +8,9 @@ class MainView(tk.Tk):
         self.mainViewController = mainViewController
         self.devices = []
         self.configure(background='#4F535A')
-        self.paintMainWindow()
+        self.mainFrame = self.paintMainWindow()
+        self.prueba = 1
+
 
 
     def hola(self):
@@ -30,7 +32,7 @@ class MainView(tk.Tk):
         topFrame = Frame(leftFrame,background='#4F535A',width=self.winfo_width()/1.5)
         topFrame.pack(side=TOP, expand=1, fill=X, padx=39)
 
-        addDeviceBtn = Button(topFrame, height=26, width=26, borderwidth=0,command=self.hola, image=btnAddImg, padx=0,pady=0)
+        addDeviceBtn = Button(topFrame, height=26, width=26, borderwidth=0,command=lambda:self.mainViewController.clickedAddDevice(self), image=btnAddImg, padx=0,pady=0)
         addDeviceBtn.pack(side=LEFT)
         addDeviceBtn.image = btnAddImg
 
@@ -40,6 +42,7 @@ class MainView(tk.Tk):
 
         mainFrame = Frame(leftFrame, background='white', highlightcolor="black", width=int(self.winfo_width()/1.5), height=int(self.winfo_height()/1.3))
         mainFrame.pack(expand=1, fill=BOTH, padx=40, pady=30)
+
 
         rightFrame = Frame(self, background="#4F535A", width=int(self.winfo_width()/2.5))
         rightFrame.pack(side=RIGHT, fill=Y)
@@ -62,14 +65,9 @@ class MainView(tk.Tk):
         consoleView = Frame(rightFrame,background="black",width=int(self.winfo_width()/3.5),height=int(self.winfo_height()/2.7),highlightbackground="white", highlightthickness=1)
         consoleView.pack(side=BOTTOM, fill=BOTH, expand=1)
 
+        return mainFrame
 
 
-
-
-
-        #addDeviceButton = Button(frame1, text="Anadir Dispositivo", command=lambda: self.mainViewController.clickedAddDevice(self))
-        #addDeviceButton.pack(side=LEFT)
-        #self.paintDevice()
 
     def moveDevice(self, event, myCanvas,circle):
         component=event.widget
@@ -82,9 +80,10 @@ class MainView(tk.Tk):
 
 
     def paintDevice(self):
-        myCanvas = Canvas(self)
+        myCanvas = Canvas(self.mainFrame, height=97, width=97, bg="white")
+        myCanvas.place(x=50, y=50)
+        circle = myCanvas.create_oval(3, 3,99,99 ,fill="#00A2FF",  outline='red')
 
-        circle = myCanvas.create_oval(100-50, 120-50,100+50, 120+50 ,fill="blue")
-        myCanvas.pack()
         myCanvas.bind('<B1-Motion>', lambda event: self.moveDevice(event, myCanvas, circle))
+        self.update()
         #devices.append(self.myCanvas)

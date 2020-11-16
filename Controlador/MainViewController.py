@@ -10,11 +10,14 @@ class MainViewController:
         self.mainView = MainView(self)
         self.mainView.mainloop()
 
+
     def clickedAddDevice(self, window):
         AddDeviceView(self, window)
 
 
     def addNewDevice(self, window, name, ip):
         dispositivo = Device(name, ip)
+        self.mainView.paintDevice()
+
 
         window.destroy()
