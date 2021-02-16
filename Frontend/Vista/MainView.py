@@ -47,7 +47,7 @@ class MainView(tk.Tk):
         rightFrame = Frame(self, background="#4F535A", width=int(self.winfo_width()/2.5))
         rightFrame.pack(side=RIGHT, fill=Y)
 
-        butonOptionsFrame = Frame(rightFrame,background="#4F535A",height=int(self.winfo_height()/2) ,width=int(self.winfo_width()/3.5),highlightbackground="white", highlightthickness=1)
+        butonOptionsFrame = Frame(rightFrame,background="#4F535A",height=int() ,width=int(self.winfo_width()/3.5),highlightbackground="white", highlightthickness=1)
         butonOptionsFrame.pack(side=TOP, fill=BOTH)
 
         showCurrentBtn = Button(butonOptionsFrame, borderwidth=0,command=self.hola, image=rightButtonsImg,highlightthickness=0, bd = 0)
@@ -79,11 +79,13 @@ class MainView(tk.Tk):
         myCanvas.place(x=xpos, y=ypos)
 
 
-    def paintDevice(self):
+    def paintDevice(self, name):
         myCanvas = Canvas(self.mainFrame, height=97, width=97, bg="white")
         myCanvas.place(x=50, y=50)
         circle = myCanvas.create_oval(3, 3,99,99 ,fill="#00A2FF",  outline='red')
-
+        myCanvas.create_text(50,50,text=name, font=("Andale Mono", 16), fill="white")
         myCanvas.bind('<B1-Motion>', lambda event: self.moveDevice(event, myCanvas, circle))
+        myCanvas.bind('<Double-Button-1>', lambda event: self.mainViewController.clickedConfigurationDevice(self, event, name))
+        self.devices.append(myCanvas)
         self.update()
         #devices.append(self.myCanvas)

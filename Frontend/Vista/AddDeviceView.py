@@ -27,7 +27,7 @@ class AddDeviceView(tk.Toplevel):
         nameDevice = Label(self, text="Nombre: ").pack()
         entryName = Entry(self)
         entryName.pack()
-        ipDevice = Label(self, text="IP/mask: ").pack()
+        ipDevice = Label(self, text="IP Mngmt: ").pack()
         entryIp = Entry(self)
         entryIp.pack()
         port = Label(self, text="Port ").pack()
@@ -42,7 +42,7 @@ class AddDeviceView(tk.Toplevel):
         type = Label(self, text=" Type").pack()
         typeEntry = ttk.Combobox(self, state="readonly")
         typeEntry.pack()
-        typeEntry["values"] = ["Cisco IOS", "JunosOS", "Cisco Nexus", "Huawei"]
+        typeEntry["values"] = ["Cisco IOS", "JunosOS", "Cisco Nexus", "Arista EOS"]
         statusLabel = Label(self, text="Comprobando conexion...")
         statusLabel.pack_forget()
 

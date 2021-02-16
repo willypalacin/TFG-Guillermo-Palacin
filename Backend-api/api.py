@@ -1,19 +1,28 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort
-from Device import Device
+from IOSRouter import IOSRouter
+from AristaSwitch import AristaSwitch
+import json
 
 app = Flask(__name__)
 api = Api(app)
 
-devices = {}
+devices = []
 
-device_put = reqparse.RequestParser()
-#device_put.add_argument("name", type=str, help="Name of the device", required=True)
-device_put.add_argument("ip", type=str, help="ip/mask is required to make the put request", required=True)
-device_put.add_argument("type", type=str, help="type of device ej: cisco-ios", required=True)
-device_put.add_argument("usnm", type=str, help="username", required=True)
-device_put.add_argument("pass", type=str, help="type of device ej: cisco-ios", required=True)
-device_put.add_argument("port", type=str, help="type of device ej: cisco-ios", required=True)
+device_post = reqparse.RequestParser()
+device_post.add_argument("name", type=str, help="Name of the device", required=True)
+device_post.add_argument("ip", type=str, help="ip/mask is required to make the put request", required=True)
+device_post.add_argument("type", type=str, help="type of device ej: cisco-ios", required=True)
+device_post.add_argument("usnm", type=str, help="username", required=True)
+device_post.add_argument("pass", type=str, help="type of device ej: cisco-ios", required=True)
+device_post.add_argument("port", type=str, help="type of device ej: cisco-ios", required=True)
+
+#device_put = reqparse.RequestParser()
+#args = device_put.parse_args()
+#device_put.add_argument("property", type=str, help="type of device ej: cisco-ios", required=True)
+#device_put.add_argument("ip", type=str, help="username", required=True)
+#device_put.add_argument("mask", type=str, help="type of device ej: cisco-ios", required=True)
+#device_put.add_argument("description", type=str, help="type of device ej: cisco-ios", required=True)
 
 
 def errorHandler(video_id):
@@ -21,17 +30,35 @@ def errorHandler(video_id):
         #Automaticamente devuelve la respuesta
         abort(404,message="Video no es valido")
 
+def getDeviceByName(name):
+    for device in devices:
+        if device.getName() == name:
+            return device
 
 
-class DeviceRequestHandler(Resource):
+class DeviceAddHandler(Resource):
+    def addDeviceByType(self, args):
+        if args["type"] == 'cisco_ios':
+            device = IOSRouter(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
+            return device
+        if args["type"] == 'arista_eos':
+            device = AristaSwitch(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
+            return device
+        return 0
+
     def get(self, device_name):
         errorHandler(device_name)
         return devices[device_name]
 
-    def put(self, device_name):
-        args = device_put.parse_args()
-        device = Device(device_name, args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
+    def post(self, device_name):
+
+        args = device_post.parse_args()
+
+        device = self.addDeviceByType(args)
+        print("DEICE NAME: " + device.getType())
+
         status_code = device.checkConnectivity()
+        devices.append(device) #Solo en caso de que el status code sea satisfactorio
         #device.createLoopbackTesting("1.2.3.4", "255.255.255.255", , "Loopback 1242")
         return "hola", status_code
         #devices[device_name] = args
@@ -43,11 +70,25 @@ class DeviceRequestHandler(Resource):
 
 
 
+class DeviceAddPropertyHandler(Resource):
+    def put(self, device_name, property):
+        #args = device_put.parse_args()
+        device = getDeviceByName(device_name)
+        print (request.is_json)
+        args = json.loads(request.data)
+        #device.createLoopbackTesting("Loopback123", device_name, '1.2.2.1', '255.255.255.0')
+
+        device.editInterface(args["int_name"], args["description"], args["ip"], args["mask"])
+        return "Correcto", 200
+
+
+
     #def post(self):
     #    return {"data": "Hello World_Post"}
 
 
 
 if __name__ == '__main__':
-    api.add_resource(DeviceRequestHandler, "/device/<string:device_name>")
+    api.add_resource(DeviceAddHandler, "/device/<string:device_name>")
+    api.add_resource(DeviceAddPropertyHandler, "/device/<string:device_name>/<string:property>")
     app.run(debug=True)
