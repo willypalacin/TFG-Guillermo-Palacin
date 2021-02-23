@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort
 from IOSRouter import IOSRouter
 from AristaSwitch import AristaSwitch
+from JunosOSRouter import JunosOSRouter
 import json
 
 app = Flask(__name__)
@@ -43,6 +44,10 @@ class DeviceAddHandler(Resource):
             return device
         if args["type"] == 'arista_eos':
             device = AristaSwitch(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
+            return device
+        if args["type"] == 'junos_os':
+            device = JunosOSRouter(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
+
             return device
         return 0
 

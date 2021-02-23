@@ -27,7 +27,7 @@ class DeviceConfigInterfacesView(tk.Toplevel):
         Label(frameInterface, text="Selecciona Interfaz", font=("Andale Mono",12)).pack(side=TOP)
         intEntry = ttk.Combobox(frameInterface, state="readonly")
         intEntry.pack(side = LEFT, pady=(10,20))
-        intEntry["values"] = ["Loopback2", "GigabitEthernet1", "GigabitEthernet2", "GigabitEthernet3"]
+        intEntry["values"] = ["Loopback2", "GigabitEthernet1", "GigabitEthernet2", "GigabitEthernet3", "ge-0/0/2"]
 
         frameIp = Frame(self)
         frameIp.pack()

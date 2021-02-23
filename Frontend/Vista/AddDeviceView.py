@@ -42,7 +42,7 @@ class AddDeviceView(tk.Toplevel):
         type = Label(self, text=" Type").pack()
         typeEntry = ttk.Combobox(self, state="readonly")
         typeEntry.pack()
-        typeEntry["values"] = ["Cisco IOS", "JunosOS", "Cisco Nexus", "Arista EOS"]
+        typeEntry["values"] = ["Cisco IOS", "Junos OS", "Cisco Nexus", "Arista EOS"]
         statusLabel = Label(self, text="Comprobando conexion...")
         statusLabel.pack_forget()
 
