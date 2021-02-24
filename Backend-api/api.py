@@ -11,19 +11,13 @@ api = Api(app)
 devices = []
 
 device_post = reqparse.RequestParser()
-device_post.add_argument("name", type=str, help="Name of the device", required=True)
-device_post.add_argument("ip", type=str, help="ip/mask is required to make the put request", required=True)
-device_post.add_argument("type", type=str, help="type of device ej: cisco-ios", required=True)
+device_post.add_argument("name", type=str, help="Nombre del dispositivo", required=True)
+device_post.add_argument("ip", type=str, help="ip/mask se necesita para hacer la peticion", required=True)
+device_post.add_argument("type", type=str, help="tipo dispositivo cisco-ios", required=True)
 device_post.add_argument("usnm", type=str, help="username", required=True)
-device_post.add_argument("pass", type=str, help="type of device ej: cisco-ios", required=True)
-device_post.add_argument("port", type=str, help="type of device ej: cisco-ios", required=True)
+device_post.add_argument("pass", type=str, help="password", required=True)
+device_post.add_argument("port", type=str, help="puerto ", required=True)
 
-#device_put = reqparse.RequestParser()
-#args = device_put.parse_args()
-#device_put.add_argument("property", type=str, help="type of device ej: cisco-ios", required=True)
-#device_put.add_argument("ip", type=str, help="username", required=True)
-#device_put.add_argument("mask", type=str, help="type of device ej: cisco-ios", required=True)
-#device_put.add_argument("description", type=str, help="type of device ej: cisco-ios", required=True)
 
 
 def errorHandler(video_id):
@@ -36,6 +30,11 @@ def getDeviceByName(name):
         if device.getName() == name:
             return device
 
+@app.route('/device/<string:device_name>/interfaces/list',methods = ['GET'])
+def getInterfacesList(device_name):
+    device = getDeviceByName(device_name)
+    interfaces, status_code = device.getInterfacesList()
+    return interfaces, status_code
 
 class DeviceAddHandler(Resource):
     def addDeviceByType(self, args):
@@ -67,11 +66,12 @@ class DeviceAddHandler(Resource):
         #device.createLoopbackTesting("1.2.3.4", "255.255.255.255", , "Loopback 1242")
         return "hola", status_code
         #devices[device_name] = args
-        #return  devices[device_name], 201
+        #return  devices[device_na åme], 201
     def delete(self, device_name):
         errorHandler( device_name)
         devices.pop(device_name)
         return 'Dispositivo eliminado',204
+
 
 
 
@@ -95,5 +95,5 @@ class DeviceAddPropertyHandler(Resource):
 
 if __name__ == '__main__':
     api.add_resource(DeviceAddHandler, "/device/<string:device_name>")
-    api.add_resource(DeviceAddPropertyHandler, "/device/<string:device_name>/<string:property>")
+    api.add_resource(DeviceAddPropertyHandler, "/device/<string:device_name>/interfaces/<string:property>")
     app.run(debug=True)

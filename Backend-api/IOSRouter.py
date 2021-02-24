@@ -43,3 +43,14 @@ class IOSRouter(Device):
         print ("CONFIG: \n: {}".format(config))
         output = self.connection.send_config_set(config)
         print('\nConfiguration applied: \n\n' + output)
+
+    def getInterfacesList(self):
+        try:
+            self.connection.enable()
+            output = self.connection.send_command('show ip interface brief').split('\n')
+            data = {'interfaces': []}
+            for i in range (1, len(output)):
+                data['interfaces'].append(output[i].split(" ")[0])
+            return data, 201
+        except:
+            return {}, 404

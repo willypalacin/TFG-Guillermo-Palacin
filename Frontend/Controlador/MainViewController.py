@@ -37,10 +37,15 @@ class MainViewController:
         #print("HOLQ")
 
     def createInterface(self, window, name, data):
-        response = requests.put(BASE + "device/{}/interface".format(name), json.dumps(data))
+        response = requests.put(BASE + "device/{}/interfaces/interface".format(name), json.dumps(data))
         if(response.status_code == 200):
             print("Config aplicada correctamente")
             window.destroy()
+    def getInterfacesList(self, name):
+        response = requests.get(BASE + "device/{}/interfaces/list".format(name))
+        print (json.loads(response.content))
+        return json.loads(response.content)
+
 
 
 

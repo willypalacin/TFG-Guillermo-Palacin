@@ -2,6 +2,7 @@ from Device import Device
 from ncclient import manager
 import jinja2, json
 from netaddr import IPAddress
+import xmltodict
 
 class JunosOSRouter(Device):
     def __init__(self, name, ip, type, username, password, port):
@@ -37,3 +38,17 @@ class JunosOSRouter(Device):
             return 201
         except:
             return 404
+
+    def getInterfacesList(self):
+        try:
+            data = {'interfaces': []}
+            res = self.connection.command('show interfaces ge-0/0/* terse' , format='xml')
+            #hola = ET.fromstring(res)
+            data_xml = xmltodict.parse(str(res))
+
+            for key in data_xml['rpc-reply']['interface-information']['physical-interface']:
+                data['interfaces'].append(key['name'])
+
+            return json.dumps(data), 201
+        except:
+            return {}, 404

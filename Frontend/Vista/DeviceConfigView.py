@@ -62,7 +62,10 @@ class DeviceConfigView(tk.Toplevel):
         btnSTP.pack(padx=(30,70),pady=10)
 
     def clickedViewInt(self):
-        DeviceConfigInterfacesView(self, self.controller, self.name)
+        interfaces = self.controller.getInterfacesList(self.name)
+        print("TYPEEEEEE\n")
+        print(type(interfaces))
+        DeviceConfigInterfacesView(self, self.controller, self.name, interfaces)
 
 
 

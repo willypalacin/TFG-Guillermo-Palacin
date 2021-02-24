@@ -4,13 +4,15 @@ import tkinter as tk
 
 
 class DeviceConfigInterfacesView(tk.Toplevel):
-    def __init__(self, rootWindow,controller, name):
+    def __init__(self, rootWindow,controller, name, interfaces):
         super().__init__(rootWindow, height=673, width=762, bg="white", highlightbackground="#00A2FF", highlightthickness=4)
         self.controller = controller
         self.name = name
+        self.interfaces = interfaces
         self.title("Config interfaces de {}.".format(name))
         self.update()
         self.createView(name)
+
 
     def createView(self, name):
         imgBtnAccept = PhotoImage(file = 'Vista/assets/btn_accept_config.png')
@@ -27,7 +29,7 @@ class DeviceConfigInterfacesView(tk.Toplevel):
         Label(frameInterface, text="Selecciona Interfaz", font=("Andale Mono",12)).pack(side=TOP)
         intEntry = ttk.Combobox(frameInterface, state="readonly")
         intEntry.pack(side = LEFT, pady=(10,20))
-        intEntry["values"] = ["Loopback2", "GigabitEthernet1", "GigabitEthernet2", "GigabitEthernet3", "ge-0/0/2"]
+        intEntry["values"] = self.interfaces['interfaces']
 
         frameIp = Frame(self)
         frameIp.pack()

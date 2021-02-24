@@ -29,7 +29,21 @@ class AristaSwitch(Device):
 
     def editInterface(self, int_name, desc, ip, mask):
         maskBits = IPAddress(mask).netmask_bits()
-        command = self.connection.run_commands(['enable', 'configure', 'interface {}'.format(int_name),
+        command = self.connection.run_commands(['enable', 'configure', 'interface {}'.format(int_name), 'no switchport',
                                                 'ip address {}/{}'.format(ip, maskBits),
                                                 'description {}'.format(desc)])
         print(command)
+
+    def getInterfacesList(self):
+        try:
+            #version_info = eapi.run_commands(['enable', 'configure', 'interface Loopback11', 'ip address 1.2.2.2/24'])
+            interfaces = self.connection.api('interfaces').getall()
+            data = {'interfaces': []}
+            for key in interfaces:
+                if key != 'defaults':
+                    data['interfaces'].append(key)
+
+            return json.dumps(data), 201
+
+        except Exception:
+            return {}, 404
