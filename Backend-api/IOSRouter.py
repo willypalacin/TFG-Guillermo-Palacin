@@ -26,9 +26,9 @@ class IOSRouter(Device):
                                         device_type = self.type,
                                         port=self.port)
             self.connection = connection
-            return 201
+            return 201, "Dispositivo {} anadido satisfactoriamente".format(self.name)
         except:
-            return 404
+            return 404, "No se ha encontrado ningun dispositivo con IP {}".format(self.ip)
 
     def editInterface(self, int_name, desc, ip, mask):
         self.connection.enable()

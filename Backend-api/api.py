@@ -61,10 +61,11 @@ class DeviceAddHandler(Resource):
         device = self.addDeviceByType(args)
         print("DEICE NAME: " + device.getType())
 
-        status_code = device.checkConnectivity()
-        devices.append(device) #Solo en caso de que el status code sea satisfactorio
+        status_code, msg = device.checkConnectivity()
+        if status_code == 201:
+            devices.append(device) #Solo en caso de que el status code sea satisfactorio
         #device.createLoopbackTesting("1.2.3.4", "255.255.255.255", , "Loopback 1242")
-        return "hola", status_code
+        return msg, status_code
         #devices[device_name] = args
         #return  devices[device_na åme], 201
     def delete(self, device_name):

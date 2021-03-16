@@ -19,12 +19,12 @@ class AristaSwitch(Device):
                 port=443,
                 timeout=2
             )
-            print("HOLA")
+
             eapi = pyeapi.client.Node(eapi_param)
             self.connection = eapi
-            return 201
+            return 201, "Dispositivo {} anadido satisfactoriamente".format(self.name)
         except Exception:
-            return 404
+            return 404, "No se ha encontrado ningun dispositivo con IP {}".format(self.ip)
 
 
     def editInterface(self, int_name, desc, ip, mask):

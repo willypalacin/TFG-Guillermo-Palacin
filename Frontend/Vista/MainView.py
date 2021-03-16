@@ -8,8 +8,11 @@ class MainView(tk.Tk):
         self.mainViewController = mainViewController
         self.devices = []
         self.configure(background='#4F535A')
+        self.consoleView = None
+        self.errorMessagesLabels = []
         self.mainFrame = self.paintMainWindow()
         self.prueba = 1
+
 
 
 
@@ -62,10 +65,26 @@ class MainView(tk.Tk):
         showCurrentBtn.image = rightButtonsImg
         showCurrentBtn.pack(pady=(20,40))
 
-        consoleView = Frame(rightFrame,background="black",width=int(self.winfo_width()/3.5),height=int(self.winfo_height()/2.7),highlightbackground="white", highlightthickness=1)
-        consoleView.pack(side=BOTTOM, fill=BOTH, expand=1)
+        self.consoleView = Frame(rightFrame,background="black",width=int(self.winfo_width()/3.5),height=int(self.winfo_height()/2.7),highlightbackground="white", highlightthickness=1)
+
+        labelConsole =  Label(self.consoleView, text="—————————————————  Consola  —————————————————", fg="White", bg='black',font=("Helvetica", 12))
+        labelConsole.pack(side=TOP)
+
+        self.consoleView.pack(side=BOTTOM, fill=BOTH, expand=1)
 
         return mainFrame
+
+    def addMessageToConsole(self, text, color):
+        label = Label(self.consoleView, text=text, fg=color, bg='black',font=("Helvetica", 12))
+        label.pack(side=BOTTOM)
+        self.errorMessagesLabels.append(label)
+
+        for errorMsg in self.errorMessagesLabels:
+            errorMsg.pack_forget()
+
+        for errorMsg in reversed(self.errorMessagesLabels):
+            errorMsg.pack(side=BOTTOM)
+        self.consoleView.update()
 
 
 

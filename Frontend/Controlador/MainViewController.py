@@ -28,9 +28,11 @@ class MainViewController:
         if response.status_code == 201:
             self.dispositivos[data["name"]] = data
             self.mainView.paintDevice(data["name"])
+            self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()
         else:
             window.statusLabel.config(fg="red", text = "No se ha encontrado dispositivo")
+            self.mainView.addMessageToConsole(response.content, "Red")
 
     def clickedConfigurationDevice(self, window, event, name):
         DeviceConfigView(self, window, name)
