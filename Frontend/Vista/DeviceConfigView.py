@@ -27,7 +27,7 @@ class DeviceConfigView(tk.Toplevel):
         btnIntf.pack(padx=10, pady=10)
 
         btnRouting = tk.Button(leftFrame, text='Routing Estático \n y Dinámico',
-                           image=btnBlue, compound='center', fg="white")
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDeviceRouting(self, self.name))
         btnRouting.image=btnBlue
         btnRouting.pack(padx=10, pady=10)
 

@@ -1,6 +1,7 @@
 from tkinter import *
 from Vista.AddDeviceView import AddDeviceView
 from Vista.DeviceConfigView import DeviceConfigView
+from Vista.DeviceConfigRoutingView import DeviceConfigRoutingView
 from Vista.MainView import MainView
 import requests, json
 from Modelo.Device import Device
@@ -18,6 +19,7 @@ class MainViewController:
 
     def clickedAddDevice(self, window):
          AddDeviceView(self, window)
+         DeviceConfigRoutingView(window, self, "R1", ["GigabitEthernet0", "GigabitEthernet1", "GigabitEthernet2", "GigabitEthernet3"])
 
 
 
@@ -37,6 +39,8 @@ class MainViewController:
     def clickedConfigurationDevice(self, window, event, name):
         DeviceConfigView(self, window, name)
         #print("HOLQ")
+    def clickedDeviceRouting(self, window, name):
+        DeviceConfigRoutingView(window, self, "R1", ["G0/0", "G0/1"])
 
     def createInterface(self, window, name, data):
         response = requests.put(BASE + "device/{}/interfaces/interface".format(name), json.dumps(data))
@@ -47,6 +51,25 @@ class MainViewController:
         response = requests.get(BASE + "device/{}/interfaces/list".format(name))
         print (json.loads(response.content))
         return json.loads(response.content)
+
+    def createRouting(self, window, checkboxes, pid, RouterId, name):
+        data = {'RouterId': RouterId, 'ProcessId': pid, 'interfaces': {}}
+        for value in checkboxes:
+            print(value)
+            if checkboxes[value]['activa'].get() == 1:
+                if checkboxes[value]['areaId'] != "":
+                    data['interfaces'][value] = checkboxes[value]['areaId'].get()
+                else:
+                    data['interfaces'][value] = '0'
+
+
+        print (data)
+        response = requests.put(BASE + "device/{}/protocols/ospf".format(name), json.dumps(data))
+
+
+
+
+
 
 
 

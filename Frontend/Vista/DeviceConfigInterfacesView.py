@@ -37,9 +37,9 @@ class DeviceConfigInterfacesView(tk.Toplevel):
         Label(frameIp, text="Introduce IP y máscara", font=("Andale Mono",12)).pack(side=LEFT)
         frameEntryIpMask = Frame(self)
         frameEntryIpMask.pack(pady=(10,20))
-        ipEntry = Entry(frameEntryIpMask,highlightbackground="#00A2FF", highlightthickness=1, width=9)
+        ipEntry = Entry(frameEntryIpMask,bg="#ABE0FF", width=9)
         ipEntry.pack(side=LEFT)
-        maskEntry = Entry(frameEntryIpMask,highlightbackground="#00A2FF", highlightthickness=1, width=2)
+        maskEntry = Entry(frameEntryIpMask,bg="#ABE0FF", width=2)
         maskEntry.pack(side=RIGHT)
         Label(frameEntryIpMask, text=" / ", font=("Andale Mono",18)).pack(side=RIGHT)
 
@@ -47,7 +47,7 @@ class DeviceConfigInterfacesView(tk.Toplevel):
         frameDescription.pack(pady=(10,20))
         Label(frameDescription, text="Descripción de la interfaz", font=("Andale Mono",12)).pack()
 
-        descriptonEntry = Entry(frameDescription,highlightbackground="#00A2FF", highlightthickness=1, width=25)
+        descriptonEntry = Entry(frameDescription,bg="#ABE0FF", width=25)
         descriptonEntry.pack(side = BOTTOM, pady=(10,0))
         frameButtons = Frame(self)
         frameButtons.pack(pady=10)
