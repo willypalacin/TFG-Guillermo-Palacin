@@ -38,7 +38,7 @@ class IOSRouter(Device):
         text = f.read()
         template = jinja2.Template(text)
         config = template.render(int_name=int_name,
-                                 name=self.name, ip=ip,
+                                 ip=ip,
                                  mask=mask, description=desc).split('\n')
         print ("CONFIG: \n: {}".format(config))
         output = self.connection.send_config_set(config)
@@ -54,3 +54,18 @@ class IOSRouter(Device):
             return data, 201
         except:
             return {}, 404
+
+    def createOspf(self, data):
+        f = open('Templates/CiscoIOS/cisco_ospf.j2')
+        text = f.read()
+        template = jinja2.Template(text)
+        config = template.render(pid= data['ProcessId'],
+                                 rid=data['RouterId'],
+                                 interfaces=data['interfaces']).split('\n')
+        output = self.connection.send_config_set(config)
+        if '%' in output:
+            start = output.find("%")
+            substring = output[start:start+60]
+            return substring, 404
+        else:
+            return 'OSPF configurado correctamentamente en {}'.format(self.name), 201

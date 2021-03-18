@@ -1,0 +1,19 @@
+<config>
+  <configuration>
+    <routing-options>
+      <router-id>{{rid}}</router-id>
+    </routing-options>
+    <protocols>
+      <ospf>
+      {% for intf in interfaces %}
+        <area>
+          <name>{{ interfaces[intf] }}</name>
+          <interface>
+            <name>{{ intf }}</name>
+          </interface>
+        </area>
+      {% endfor %}
+      </ospf>
+    </protocols>
+  </configuration>
+</config>

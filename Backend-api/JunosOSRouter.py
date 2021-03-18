@@ -52,3 +52,15 @@ class JunosOSRouter(Device):
             return json.dumps(data), 201
         except:
             return {}, 404
+
+    def createOspf(self, data):
+        try:
+            f = open('Templates/JunosOS/junos_ospf.j2')
+            text = f.read()
+            template = jinja2.Template(text)
+            netconf_data = template.render(rid = data["RouterId"], interfaces=data["interfaces"])
+            netconf_reply = self.connection.edit_config(target='candidate', config=netconf_data)
+            self.connection.commit()
+            return 'OSPF Configurado correctamente en {}'.format(self.name), 201
+        except Exception as e:
+            return '{}'.format(e), 404

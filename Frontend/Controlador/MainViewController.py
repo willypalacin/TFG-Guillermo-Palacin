@@ -19,7 +19,6 @@ class MainViewController:
 
     def clickedAddDevice(self, window):
          AddDeviceView(self, window)
-         DeviceConfigRoutingView(window, self, "R1", ["GigabitEthernet0", "GigabitEthernet1", "GigabitEthernet2", "GigabitEthernet3"])
 
 
 
@@ -40,7 +39,8 @@ class MainViewController:
         DeviceConfigView(self, window, name)
         #print("HOLQ")
     def clickedDeviceRouting(self, window, name):
-        DeviceConfigRoutingView(window, self, "R1", ["G0/0", "G0/1"])
+        interfaces = self.getInterfacesList(name)
+        DeviceConfigRoutingView(window, self, name, interfaces['interfaces'])
 
     def createInterface(self, window, name, data):
         response = requests.put(BASE + "device/{}/interfaces/interface".format(name), json.dumps(data))
@@ -55,9 +55,9 @@ class MainViewController:
     def createRouting(self, window, checkboxes, pid, RouterId, name):
         data = {'RouterId': RouterId, 'ProcessId': pid, 'interfaces': {}}
         for value in checkboxes:
-            print(value)
+            #print(checkboxes[value]['activa'].get())
             if checkboxes[value]['activa'].get() == 1:
-                if checkboxes[value]['areaId'] != "":
+                if checkboxes[value]['areaId'].get() != "":
                     data['interfaces'][value] = checkboxes[value]['areaId'].get()
                 else:
                     data['interfaces'][value] = '0'
@@ -65,6 +65,11 @@ class MainViewController:
 
         print (data)
         response = requests.put(BASE + "device/{}/protocols/ospf".format(name), json.dumps(data))
+        if response.status_code == 201:
+            self.mainView.addMessageToConsole(response.content, "Green")
+            window.destroy()
+        else:
+            self.mainView.addMessageToConsole(response.content, "Red")
 
 
 

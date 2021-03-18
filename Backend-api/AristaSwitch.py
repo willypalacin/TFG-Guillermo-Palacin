@@ -47,3 +47,15 @@ class AristaSwitch(Device):
 
         except Exception:
             return {}, 404
+
+    def createOspf(self, data):
+        try:
+            commands = ['enable', 'configure', 'router ospf {}'.format(data['ProcessId']), 'router-id {}'.format(data['RouterId'])]
+            for intf in data['interfaces']:
+                commands.append('interface {}'.format(intf))
+                commands.append('ip ospf area {}'.format(data['interfaces'][intf]))
+            ospf_creation = self.connection.run_commands(commands)
+            return "El proceso OSPF se ha creado correctamente en {}".format(self.name), 201
+        #print (ospf_creation)
+        except Exception as e:
+            return '{}'.format(e), 404

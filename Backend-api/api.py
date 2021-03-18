@@ -39,8 +39,9 @@ def getInterfacesList(device_name):
 @app.route('/device/<string:device_name>/protocols/ospf',methods = ['PUT'])
 def addOspf(device_name):
     args = json.loads(request.data)
-    print(json.dumps(args))
-    return '', 201
+    device = getDeviceByName(device_name)
+    msg, code = device.createOspf(args)
+    return msg, code
 
 class DeviceAddHandler(Resource):
     def addDeviceByType(self, args):
