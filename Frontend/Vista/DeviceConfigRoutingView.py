@@ -9,10 +9,13 @@ class DeviceConfigRoutingView(tk.Toplevel):
         self.controller = controller
         self.name = name
         self.interfaces = interfaces
-        self.resizable(width=False, height=False)
+        self.resizable(width=True, height=True)
+        #self.configure(background="#D9D9D9")
+        self.geometry("530x450")
         self.title("Config Routing de {}.".format(name))
         self.update()
         self.createView(name)
+        self.data = {'interfaces': {}}
 
 
     def createView(self, name):
@@ -21,117 +24,164 @@ class DeviceConfigRoutingView(tk.Toplevel):
         imgLineaBg = PhotoImage(file = 'Vista/assets/linea_bg.png')
         self.image = imgLineaBg
 
-        topFrame = Frame(self)
-        topFrame.pack(side=TOP)
-        titLabel=Label(topFrame, text="Configuración Routing de {}".format(name), font=("Andale Mono",18))
-        titLabel.pack(side=TOP, pady=(20,0))
-        leftFrame = Frame(self)
-        tituloDinamico=Label(leftFrame, text="Routing dinámico", font=("Andale Mono",15))
-        tituloDinamico.pack(side=TOP, pady=(20,20))
-        tituloOSPF=Label(leftFrame, text="OSPF", font=("Andale Mono",15))
-        tituloOSPF.pack(side=TOP, pady=(5,20))
-        leftFrame.pack(side=LEFT)
-        pidRidFrame = Frame(leftFrame)
-        pidFrame = Frame(pidRidFrame)
-        pidLabel=Label(pidFrame, text="PID", font=("Andale Mono",12))
-        pidLabel.pack(side=TOP)
-        pidEntry = Entry(pidFrame,bg="#ABE0FF", width=3)
-        pidEntry.pack(side=BOTTOM)
-        pidFrame.pack(side=LEFT)
-        ridFrame = Frame(pidRidFrame)
-        ridLabel=Label(ridFrame, text="Router ID", font=("Andale Mono",12))
-        ridLabel.pack(side=TOP)
-        ridEntry = Entry(ridFrame,bg="#ABE0FF", width=7)
-        ridEntry.pack(side=BOTTOM, padx=20)
-        ridFrame.pack(side=RIGHT)
-        pidRidFrame.pack(padx=20, pady=(0,20))
-        interfaceAreaFrame = Frame(leftFrame)
+        titulo = Label(self)
+        titulo.place(relx=0.4, rely=0.09, height=21, width=114)
+        titulo.configure(disabledforeground="#a3a3a3")
+        titulo.configure(font="-family {Andale Mono} -size 19")
+        titulo.configure(foreground="#000000")
+        titulo.configure(text="OSPF en {}".format(self.name))
 
-        Label(interfaceAreaFrame, text="Interface", font=("Andale Mono",12)).grid(row=0, column=0)
-        Label(interfaceAreaFrame, text="AreaID", font=("Andale Mono",12)).grid(row=0, column=1)
-        Label(interfaceAreaFrame, text="Interface", font=("Andale Mono",12)).grid(row=0, column=2)
-        Label(interfaceAreaFrame, text="AreaID", font=("Andale Mono",12)).grid(row=0, column=3)
-        col = 0
-        row = 1
-        chkValue = tk.BooleanVar()
-        checkboxes = {}
-        for int in self.interfaces:
-            checkboxes.update({int: {'activa': IntVar()}})
-            checkbox = tk.Checkbutton(interfaceAreaFrame ,text=int, font=("Andale Mono",8), var=checkboxes[int]['activa'], offvalue= 0, onvalue=1)
-            #checkboxes.append(checkbox)
-            checkbox.grid(row=row, column=col)
-            col = (col + 1)%4
-            aid = Entry(interfaceAreaFrame,bg="#ABE0FF",name=int.lower(),width=2, font=("Andale Mono",7))
-            aid.grid(row=row, column=col)
-            checkboxes[int]['areaId'] = aid
-            col = (col + 1)%4
-            if col == 0:
-                row = row + 1
-        interfaceAreaFrame.pack(padx=(20,0),pady=(0, 20))
-        rightFrame = Frame(self)
-        tituloEstatico=Label(rightFrame, text="Routing Estático", font=("Andale Mono",15))
-        tituloEstatico.pack(side=TOP, pady=(0,10))
-        tituloEstatico=Label(rightFrame, text="Añadir ruta por defecto", font=("Andale Mono",12))
-        tituloEstatico.pack(side=TOP, pady=(0,20))
+        paramLabel = Label(self)
+        paramLabel.place(relx=0.155, rely=0.211, relheight=0.05, relwidth=0.202)
+        paramLabel.configure(font="-family {Andale Mono} -size 15")
+        paramLabel.configure(text="Parámetros")
 
+        paramLabel = Label(self)
+        paramLabel.place(relx=0.6, rely=0.211, relheight=0.05, relwidth=0.302)
+        paramLabel.configure(font="-family {Andale Mono} -size 15")
+        paramLabel.configure(text="Config Actual")
 
-        rutaFrame = Frame(rightFrame)
-        gatewayFrame = Frame(rutaFrame)
-        gatewayLabel=Label(gatewayFrame, text="Gateway", font=("Andale Mono",12))
-        gatewayLabel.pack(side=TOP)
-        gatewayEntry = Entry(gatewayFrame,bg="#ABE0FF", width=9)
-        gatewayEntry.pack(side=BOTTOM)
-        gatewayFrame.pack(side=LEFT)
-        metricaFrame = Frame(rutaFrame)
-        metricaLabel=Label(metricaFrame, text="Metrica", font=("Andale Mono",12))
-        metricaLabel.pack(side=TOP)
-        metricaEntry = Entry(metricaFrame,bg="#ABE0FF", width=4)
-        metricaEntry.pack(side=BOTTOM)
-        metricaFrame.pack(side=RIGHT)
-        rutaFrame.pack()
+        ridLabel = Label(self)
+        ridLabel.place(relx=0.04, rely=0.345, relheight=0.05, relwidth=0.11)
+        ridLabel.configure(text="Router ID",font="-family {Andale Mono} -size 10")
 
-        tituloEstatico=Label(rightFrame, text="Añadir ruta estática", font=("Andale Mono",12)).pack(pady=(20,0))
-        lineaFrame = Frame(rightFrame)
-        redMaskFrame = Frame(lineaFrame)
-        redFrame = Frame(redMaskFrame)
-        redLabel = Label(redFrame, text="Red", font=("Andale Mono",12)).pack(side=TOP)
-        redEntry = Entry(redFrame,bg="#ABE0FF", width=9)
-        redEntry.pack(side=BOTTOM)
-        redFrame.pack(side=LEFT)
-        maskFrame = Frame(redMaskFrame)
-        maskLabel = Label(maskFrame, text="/", font=("Andale Mono",12)).pack(side=TOP)
-        maskEntry = Entry(maskFrame,bg="#ABE0FF", width=3)
-        maskEntry.pack(side=BOTTOM)
-        maskFrame.pack(side=RIGHT)
-        redMaskFrame.pack(side=LEFT)
+        ridEntry = Entry(self)
+        ridEntry.place(relx=0.17, rely=0.34, relheight=0.05
+                , relwidth=0.12)
+        ridEntry.configure(takefocus="", background="#ABE0FF")
+        ridEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
 
-        gwMetrFrame = Frame(lineaFrame)
-        gwFrame = Frame(gwMetrFrame)
-        gwLabel = Label(gwFrame, text="Gateway", font=("Andale Mono",12)).pack(side=TOP)
-        gwEntry = Entry(gwFrame,bg="#ABE0FF", width=5)
-        gwEntry.pack(side=BOTTOM)
-        gwFrame.pack(side=LEFT)
-        metrFrame = Frame(gwMetrFrame)
-        metrLabel = Label(metrFrame, text="Metrica", font=("Andale Mono",12)).pack(side=TOP)
-        metrEntry = Entry(metrFrame, width=3, bg="#ABE0FF")
-        metrEntry.pack(side=BOTTOM)
-        metrFrame.pack(side=RIGHT)
-        gwMetrFrame.pack(side=RIGHT, pady=10)
-        lineaFrame.pack()
-        buttonFrame = Frame(self)
-        rightFrame.pack(side=RIGHT, padx=(40,20))
-        btnAccept = tk.Button(leftFrame,
+        pidLabel = Label(self)
+        pidLabel.place(relx=0.3, rely=0.345, relheight=0.05, relwidth=0.11)
+        pidLabel.configure(text="PID",font="-family {Andale Mono} -size 10")
+
+        pidEntry = Entry(self)
+        pidEntry.place(relx=0.4, rely=0.34, relheight=0.05
+                , relwidth=0.05)
+        pidEntry.configure(takefocus="", background="#ABE0FF")
+        pidEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
+
+        paramLabel = Label(self)
+        paramLabel.place(relx=0.015, rely=0.475, relheight=0.05, relwidth=0.5)
+        paramLabel.configure(font="-family {Andale Mono} -size 15")
+        paramLabel.configure(text="Interfaces OSPF")
+
+        self.interfacesCombo = ttk.Combobox(self)
+        self.interfacesCombo.place(relx=0.05, rely=0.6, relheight=0.05, relwidth=0.27)
+        self.interfacesCombo.configure(values=self.interfaces, state='readonly', font="-family {Andale Mono} -size 10")
+        self.interfacesCombo.current(0)
+        self.currentInterface = self.interfacesCombo.get()
+        self.interfacesCombo.bind("<<ComboboxSelected>>", self.comboboxCambio)
+        self.interfacesCombo.bind("<Button-1>", self.changeCurrent)
+        self.chk = IntVar()
+        self.activarInterfaz = Checkbutton(self, var=self.chk, offvalue= 0, onvalue=1)
+        self.activarInterfaz.place(relx=0.35, rely=0.6, relwidth=0.150,  relheight=0.05)
+        self.activarInterfaz.configure(takefocus="")
+        self.activarInterfaz.configure(text="Activar", font="-family {Andale Mono} -size 11")
+
+        areaLabel = Label(self)
+        areaLabel.place(relx=0.05, rely=0.7, relheight=0.05, relwidth=0.12)
+        areaLabel.configure(font="-family {Andale Mono} -size 11")
+        areaLabel.configure(text="Area")
+
+        self.areaEntry = Entry(self)
+        self.areaEntry.place(relx=0.21, rely=0.7, relheight=0.05
+                , relwidth=0.05)
+        self.areaEntry.configure(takefocus="", background="#ABE0FF")
+        self.areaEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
+
+        costeLabel = Label(self)
+        costeLabel.place(relx=0.015, rely=0.77, relheight=0.05, relwidth=0.2)
+        costeLabel.configure(font="-family {Andale Mono} -size 11")
+        costeLabel.configure(text="Coste OSPF")
+
+        self.costeEntry = Entry(self)
+        self.costeEntry.place(relx=0.21, rely=0.77, relheight=0.05
+                , relwidth=0.05)
+        self.costeEntry.configure(takefocus="", background="#ABE0FF")
+        self.costeEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
+
+        helloLabel = Label(self)
+        helloLabel.place(relx=0.015, rely=0.84, relheight=0.05, relwidth=0.2)
+        helloLabel.configure(font="-family {Andale Mono} -size 11")
+        helloLabel.configure(text="Hello Timer")
+
+        self.helloEntry = Entry(self)
+        self.helloEntry.place(relx=0.21, rely=0.84, relheight=0.05
+                , relwidth=0.05)
+        self.helloEntry.configure(takefocus="", background="#ABE0FF")
+        self.helloEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
+
+        priLabel = Label(self)
+        priLabel.place(relx=0.3, rely=0.73, relheight=0.05, relwidth=0.15)
+        priLabel.configure(font="-family {Andale Mono} -size 11")
+        priLabel.configure(text="Prioridad")
+
+        self.priEntry = Entry(self)
+        self.priEntry.place(relx=0.47, rely=0.73, relheight=0.05
+                , relwidth=0.05)
+        self.priEntry.configure(takefocus="", background="#ABE0FF")
+        self.priEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
+
+        deadLabel = Label(self)
+        deadLabel.place(relx=0.3, rely=0.81, relheight=0.05, relwidth=0.15)
+        deadLabel.configure(font="-family {Andale Mono} -size 11")
+        deadLabel.configure(text="Dead Timer")
+
+        self.deadEntry = Entry(self)
+        self.deadEntry.place(relx=0.47, rely=0.81, relheight=0.05
+                , relwidth=0.05)
+        self.deadEntry.configure(takefocus="", background="#ABE0FF")
+        self.deadEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
+
+        scrollbar = Scrollbar(self)
+        scrollbar.pack(side=RIGHT, fill=Y)
+        textbox = Text(self)
+        textbox.place(relx=0.58, rely=0.27, relheight=0.7, relwidth=0.4)
+        for i in range(100):
+            textbox.insert(END, f"This is an example line {i}\n")
+        # attach textbox to scrollbar
+        textbox.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=textbox.yview)
+
+        btnAccept = tk.Button(self,
                     text='Accept',
                     image=imgBtnAccept, compound='center',
                     fg="white", font=("Andale Mono", 10),
-                    command=lambda:self.controller.createRouting(self, checkboxes, pidEntry.get(), ridEntry.get(), self.name))
+                    command=lambda:self.acceptClick())
         btnAccept.image = imgBtnAccept
-        btnAccept.pack(side=LEFT, padx=(80,0), pady=(25, 10))
-        btnCancel = tk.Button(leftFrame, text='Cancel',
+        btnAccept.place(relx=0.08, rely=0.94)
+        btnCancel = tk.Button(self, text='Cancel',
                            image=imgBtnCancel,font=("Andale Mono", 10) ,
                            compound='center', fg="white", command=lambda: self.destroy())
         btnCancel.image = imgBtnCancel
-        btnCancel.pack(side=RIGHT, padx=(0, 100), pady=(25, 10))
+        btnCancel.place(relx=0.25, rely=0.94)
+
+
+
+        raya = tk.Canvas(self)
+        raya.place(relx=0.55, rely=0.226, relheight=0.651
+                , relwidth=0.001)
+        raya.configure(borderwidth="2")
+        raya.configure(highlightbackground="#000000")
+        raya.configure(insertbackground="black")
+        raya.configure(relief="ridge")
+
+    def acceptClick(self):
+        self.currentInterface = self.interfacesCombo.get()
+        print("Accept interfaz: {}, activa {}, area: {}, coste: {}, hello:{} ,dead: {}, pri: {}".format(self.currentInterface, self.chk.get(), self.areaEntry.get(), self.costeEntry.get(), self.helloEntry.get(), self.deadEntry.get(), self.priEntry.get()))
+
+    def changeCurrent(self, event):
+        self.currentInterface = self.interfacesCombo.get()
+
+    def comboboxCambio(self,event):
+        print("HOLA")
+        print("interfaz: {}, activa {}, area: {}, coste: {}, hello:{} ,dead: {}, pri: {}".format(self.currentInterface, self.chk.get(), self.areaEntry.get(), self.costeEntry.get(), self.helloEntry.get(), self.deadEntry.get(), self.priEntry.get()))
+        self.update()
+
+
+
+
 
 
     def fillDataIntoDict(self, intf, desc, ip, mask):

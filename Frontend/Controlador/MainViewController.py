@@ -18,7 +18,8 @@ class MainViewController:
 
 
     def clickedAddDevice(self, window):
-         AddDeviceView(self, window)
+        DeviceConfigRoutingView(window, self, "R1", ["GigabitEthernet1", "GigabitEthernet2"])
+        AddDeviceView(self, window)
 
 
 
