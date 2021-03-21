@@ -3,19 +3,26 @@ from tkinter import ttk
 import tkinter as tk
 
 
+
+
 class DeviceConfigRoutingView(tk.Toplevel):
-    def __init__(self, rootWindow,controller, name, interfaces):
+    def __init__(self, rootWindow,controller, name, interfaces, dataOspf):
         super().__init__(rootWindow, height=673, width=762, bg="white", highlightbackground="#00A2FF", highlightthickness=4)
         self.controller = controller
         self.name = name
         self.interfaces = interfaces
+        self.dataOspf = dataOspf
         self.resizable(width=True, height=True)
         #self.configure(background="#D9D9D9")
         self.geometry("530x450")
         self.title("Config Routing de {}.".format(name))
         self.update()
+        self.data = {'ospf': {
+                             'routerId': '0', 'processId': '1',
+                             'interfaces': {}}}
         self.createView(name)
-        self.data = {'interfaces': {}}
+
+
 
 
     def createView(self, name):
@@ -45,21 +52,21 @@ class DeviceConfigRoutingView(tk.Toplevel):
         ridLabel.place(relx=0.04, rely=0.345, relheight=0.05, relwidth=0.11)
         ridLabel.configure(text="Router ID",font="-family {Andale Mono} -size 10")
 
-        ridEntry = Entry(self)
-        ridEntry.place(relx=0.17, rely=0.34, relheight=0.05
+        self.ridEntry = Entry(self)
+        self.ridEntry.place(relx=0.17, rely=0.34, relheight=0.05
                 , relwidth=0.12)
-        ridEntry.configure(takefocus="", background="#ABE0FF")
-        ridEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
+        self.ridEntry.configure(takefocus="", background="#ABE0FF")
+        self.ridEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
 
         pidLabel = Label(self)
         pidLabel.place(relx=0.3, rely=0.345, relheight=0.05, relwidth=0.11)
         pidLabel.configure(text="PID",font="-family {Andale Mono} -size 10")
 
-        pidEntry = Entry(self)
-        pidEntry.place(relx=0.4, rely=0.34, relheight=0.05
+        self.pidEntry = Entry(self)
+        self.pidEntry.place(relx=0.4, rely=0.34, relheight=0.05
                 , relwidth=0.05)
-        pidEntry.configure(takefocus="", background="#ABE0FF")
-        pidEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
+        self.pidEntry.configure(takefocus="", background="#ABE0FF")
+        self.pidEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
 
         paramLabel = Label(self)
         paramLabel.place(relx=0.015, rely=0.475, relheight=0.05, relwidth=0.5)
@@ -138,8 +145,7 @@ class DeviceConfigRoutingView(tk.Toplevel):
         scrollbar.pack(side=RIGHT, fill=Y)
         textbox = Text(self)
         textbox.place(relx=0.58, rely=0.27, relheight=0.7, relwidth=0.4)
-        for i in range(100):
-            textbox.insert(END, f"This is an example line {i}\n")
+        textbox.insert(INSERT, self.dataOspf)
         # attach textbox to scrollbar
         textbox.config(yscrollcommand=scrollbar.set)
         scrollbar.config(command=textbox.yview)
@@ -156,9 +162,6 @@ class DeviceConfigRoutingView(tk.Toplevel):
                            compound='center', fg="white", command=lambda: self.destroy())
         btnCancel.image = imgBtnCancel
         btnCancel.place(relx=0.25, rely=0.94)
-
-
-
         raya = tk.Canvas(self)
         raya.place(relx=0.55, rely=0.226, relheight=0.651
                 , relwidth=0.001)
@@ -169,25 +172,29 @@ class DeviceConfigRoutingView(tk.Toplevel):
 
     def acceptClick(self):
         self.currentInterface = self.interfacesCombo.get()
-        print("Accept interfaz: {}, activa {}, area: {}, coste: {}, hello:{} ,dead: {}, pri: {}".format(self.currentInterface, self.chk.get(), self.areaEntry.get(), self.costeEntry.get(), self.helloEntry.get(), self.deadEntry.get(), self.priEntry.get()))
+        self.data['ospf']['interfaces'].update({self.currentInterface: {}})
+        self.data['ospf']['processId'] = self.pidEntry.get()
+        self.data['ospf']['routerId'] = self.ridEntry.get()
+        if self.chk.get():
+            self.data['ospf']['interfaces'][self.currentInterface]['area'] = self.areaEntry.get()
+            self.data['ospf']['interfaces'][self.currentInterface]['coste'] = self.costeEntry.get()
+            self.data['ospf']['interfaces'][self.currentInterface]['helloTimer'] = self.helloEntry.get()
+            self.data['ospf']['interfaces'][self.currentInterface]['deadTimer'] = self.deadEntry.get()
+            self.data['ospf']['interfaces'][self.currentInterface]['priority'] = self.priEntry.get()
+        self.controller.createRouting(self, self.data, self.name)
+
+
 
     def changeCurrent(self, event):
         self.currentInterface = self.interfacesCombo.get()
+        if self.chk.get():
+            self.data['ospf']['interfaces'].update({self.currentInterface: {}})
+
+            self.data['ospf']['interfaces'][self.currentInterface]['area'] = self.areaEntry.get()
+            self.data['ospf']['interfaces'][self.currentInterface]['coste'] = self.costeEntry.get()
+            self.data['ospf']['interfaces'][self.currentInterface]['helloTimer'] = self.helloEntry.get()
+            self.data['ospf']['interfaces'][self.currentInterface]['deadTimer'] = self.deadEntry.get()
+            self.data['ospf']['interfaces'][self.currentInterface]['priority'] = self.priEntry.get()
 
     def comboboxCambio(self,event):
-        print("HOLA")
-        print("interfaz: {}, activa {}, area: {}, coste: {}, hello:{} ,dead: {}, pri: {}".format(self.currentInterface, self.chk.get(), self.areaEntry.get(), self.costeEntry.get(), self.helloEntry.get(), self.deadEntry.get(), self.priEntry.get()))
         self.update()
-
-
-
-
-
-
-    def fillDataIntoDict(self, intf, desc, ip, mask):
-        return {
-            "int_name": intf,
-            "description": desc,
-            "ip": ip,
-            "mask": "255.255.255.0"
-        }

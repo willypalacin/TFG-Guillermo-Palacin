@@ -3,17 +3,21 @@
     <routing-options>
       <router-id>{{rid}}</router-id>
     </routing-options>
-    <protocols>
-      <ospf>
-      {% for intf in interfaces %}
+    {% for intf in interfaces %}
+      <protocols>
+        <ospf>
         <area>
-          <name>{{ interfaces[intf] }}</name>
+          <name>{{ interfaces[intf]['area'] }}</name>
           <interface>
-            <name>{{ intf }}</name>
+          <name>{{intf}}</name>
+          <metric>{{ interfaces[intf]['coste'] }}</metric>
+          <priority>{{interfaces[intf]['priority']}}</priority>
+          <hello-interval>{{interfaces[intf]['helloTimer']}}</hello-interval>
+          <dead-interval>{{interfaces[intf]['deadTimer']}}</dead-interval>
           </interface>
         </area>
-      {% endfor %}
       </ospf>
     </protocols>
+  {% endfor %}
   </configuration>
 </config>

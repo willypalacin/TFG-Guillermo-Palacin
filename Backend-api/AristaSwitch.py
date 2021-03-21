@@ -1,5 +1,6 @@
 from Device import Device
 import json, pyeapi
+import yaml
 from netaddr import IPAddress
 
 
@@ -48,12 +49,54 @@ class AristaSwitch(Device):
         except Exception:
             return {}, 404
 
-    def createOspf(self, data):
+    def getOspfData(self):
+        data = {'ospf': {'routerId': 'No configurado', 'processId': 'No configurado', 'interfaces': {}}}
         try:
-            commands = ['enable', 'configure', 'router ospf {}'.format(data['ProcessId']), 'router-id {}'.format(data['RouterId'])]
-            for intf in data['interfaces']:
-                commands.append('interface {}'.format(intf))
-                commands.append('ip ospf area {}'.format(data['interfaces'][intf]))
+            response = self.connection.run_commands('show ip ospf')
+            print("RESPONSEEEE")
+            print(response)
+            if response[0]['vrfs'] != {}:
+                data['ospf']['processId'] = str((list(response[0]['vrfs']['default']['instList'].keys())[0]))
+                data['ospf']['routerId']= response[0]['vrfs']['default']['instList'][data['ospf']['processId']]['routerId']
+                response = self.connection.run_commands('show ip ospf interface')
+                #if response[0]['vrfs']:
+                #data['ospf']['interfaces'].update({self.currentInterface: {}})
+                for intf in response[0]['vrfs']['default']['instList'][data['ospf']['processId']]['interfaces']:
+                    dataInterfaz= response[0]['vrfs']['default']['instList'][data['ospf']['processId']]['interfaces'][intf]
+                    data['ospf']['interfaces'].update({intf: {}})
+                    data['ospf']['interfaces'][intf]['ip'] = dataInterfaz['interfaceAddress']
+                    data['ospf']['interfaces'][intf]['mask'] = dataInterfaz['interfaceMask']
+                    data['ospf']['interfaces'][intf]['coste'] = dataInterfaz['cost']
+                    data['ospf']['interfaces'][intf]['priority'] = dataInterfaz['priority']
+                    data['ospf']['interfaces'][intf]['deadTimer'] = dataInterfaz['helloInterval']
+                    data['ospf']['interfaces'][intf]['helloTimer'] = dataInterfaz['deadInterval']
+                    data['ospf']['interfaces'][intf]['area'] = dataInterfaz['area']
+
+            return yaml.dump(data, default_flow_style=False), 201
+                    #data['ospf']['routerId']= response[0]['vrfs']['default']['instList'][str(pid)]
+        except Exception as e:
+            print("DEVUELVE ESTO")
+            return yaml.dump(data, default_flow_style=False), 404
+
+
+    def createOspf(self, data):
+        
+        try:
+            response = self.connection.run_commands('show ip ospf')
+            if response[0]['vrfs'] != {}:
+                print("ENTRA")
+                pid= int(list(response[0]['vrfs']['default']['instList'].keys())[0])
+                self.connection.run_commands(['enable', 'configure', 'no router ospf {}'.format(pid)])
+
+            commands = ['enable', 'configure', 'router ospf {}'.format(data['ospf']['processId']), 'router-id {}'.format(data['ospf']['routerId'])]
+            for intf in data['ospf']['interfaces']:
+                if data['ospf']['interfaces'][intf]:
+                    commands.append('interface {}'.format(intf))
+                    commands.append('ip ospf area {}'.format(data['ospf']['interfaces'][intf]['area']))
+                    commands.append('ip ospf cost {}'.format(data['ospf']['interfaces'][intf]['coste']))
+                    commands.append('ip ospf hello-interval {}'.format(data['ospf']['interfaces'][intf]['helloTimer']))
+                    commands.append('ip ospf dead-interval {}'.format(data['ospf']['interfaces'][intf]['deadTimer']))
+                    commands.append('ip ospf dead-interval {}'.format(data['ospf']['interfaces'][intf]['priority']))
             ospf_creation = self.connection.run_commands(commands)
             return "El proceso OSPF se ha creado correctamente en {}".format(self.name), 201
         #print (ospf_creation)

@@ -4,6 +4,7 @@ from Vista.DeviceConfigView import DeviceConfigView
 from Vista.DeviceConfigRoutingView import DeviceConfigRoutingView
 from Vista.MainView import MainView
 import requests, json
+import yaml
 from Modelo.Device import Device
 from Vista.DeviceConfigInterfacesView import DeviceConfigInterfacesView
 
@@ -18,7 +19,7 @@ class MainViewController:
 
 
     def clickedAddDevice(self, window):
-        DeviceConfigRoutingView(window, self, "R1", ["GigabitEthernet1", "GigabitEthernet2"])
+        #DeviceConfigRoutingView(window, self, "R1", ["GigabitEthernet1", "GigabitEthernet2"])
         AddDeviceView(self, window)
 
 
@@ -41,7 +42,10 @@ class MainViewController:
         #print("HOLQ")
     def clickedDeviceRouting(self, window, name):
         interfaces = self.getInterfacesList(name)
-        DeviceConfigRoutingView(window, self, name, interfaces['interfaces'])
+        dataOspf = self.getOspfData(name)
+
+
+        DeviceConfigRoutingView(window, self, name, interfaces['interfaces'], dataOspf)
 
     def createInterface(self, window, name, data):
         response = requests.put(BASE + "device/{}/interfaces/interface".format(name), json.dumps(data))
@@ -53,18 +57,11 @@ class MainViewController:
         print (json.loads(response.content))
         return json.loads(response.content)
 
-    def createRouting(self, window, checkboxes, pid, RouterId, name):
-        data = {'RouterId': RouterId, 'ProcessId': pid, 'interfaces': {}}
-        for value in checkboxes:
-            #print(checkboxes[value]['activa'].get())
-            if checkboxes[value]['activa'].get() == 1:
-                if checkboxes[value]['areaId'].get() != "":
-                    data['interfaces'][value] = checkboxes[value]['areaId'].get()
-                else:
-                    data['interfaces'][value] = '0'
+    def getOspfData(self, name):
+        response = requests.get(BASE + "device/{}/protocols/ospf".format(name))
+        return response.content
 
-
-        print (data)
+    def createRouting(self ,window, data, name):
         response = requests.put(BASE + "device/{}/protocols/ospf".format(name), json.dumps(data))
         if response.status_code == 201:
             self.mainView.addMessageToConsole(response.content, "Green")
