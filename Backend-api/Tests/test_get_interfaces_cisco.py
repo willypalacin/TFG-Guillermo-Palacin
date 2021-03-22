@@ -1,13 +1,19 @@
-from netmiko import ConnectHandler
-import jinja2, json
+import requests
+import json
+url = "https://sandbox-iosxe-latest-1.cisco.com:443/restconf/data/ietf-interfaces:interfaces"
 
 
-connection = ConnectHandler(host = 'ios-xe-mgmt.cisco.com', username='developer',
-                            password='C1sco12345',
-                            device_type = 'cisco_ios',
-                            port=8181)
-connection.enable()
-output = connection.send_command('show ip interface brief').split('\n')
+headers = {
+  'Accept': 'application/yang-data+json',
+  'Content-Type': 'application/yang-data+json',
+  'Authorization': 'Basic Y2lzY286Y2lzY29fMTIzNCE='
+}
+response = requests.get(url, auth=('developer', 'C1sco12345'),
+                            headers=headers, verify=True)
+
 data = {'interfaces': []}
-for i in range (2, len(output)):
-    data['interfaces'].append(output[i].split(" ")[0])
+
+dataResponse = json.loads(response.text)
+for intf in dataResponse['ietf-interfaces:interfaces']['interface']:
+    data['interfaces'].append(intf['name'])
+print(intf)

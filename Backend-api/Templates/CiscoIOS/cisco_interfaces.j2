@@ -1,0 +1,14 @@
+  {
+    "ietf-interfaces:interface": {
+      "name": "{{int_name}}",
+      "description": "{{ description }}",
+      "type": "iana-if-type:ethernetCsmacd",
+      "enabled": true,
+      "ietf-ip:ipv4" : {
+        "address": [{
+          "ip": "{{ ip }}",
+          "netmask": "{{ mask }}"
+        }]
+      }
+    }
+  }

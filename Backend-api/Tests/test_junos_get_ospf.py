@@ -42,8 +42,6 @@ if 'router-id' in dict['rpc-reply']['data']['configuration']['routing-options']:
         data['ospf']['interfaces'][intName]['deadTimer'] = intf['interface']['dead-interval']
         data['ospf']['interfaces'][intName]['priority'] = intf['interface']['priority']
 
-else:
-    print("no")
 print(yaml.dump(data, default_flow_style=False))
 
 
