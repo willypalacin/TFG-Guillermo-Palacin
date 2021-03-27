@@ -24,5 +24,3 @@ print ("CONFIG: \n: {}".format(config))
 response = requests.put(url, auth=('developer', 'C1sco12345') ,headers=headers, data = config, verify=False)
 if response.text == '':
     print("si")
-else:
-    print("-{}-".format(response.text))

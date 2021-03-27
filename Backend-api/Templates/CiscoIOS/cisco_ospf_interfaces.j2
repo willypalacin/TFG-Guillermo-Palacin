@@ -1,0 +1,40 @@
+{
+  "Cisco-IOS-XE-native:{{int_name}}": {
+    "name": "{{int_num}}",
+    "description": "Network Interface",
+    "ip": {
+      "address": {
+        "primary": {
+          "address": "3.3.3.3",
+          "mask": "255.255.255.0"
+        }
+      },
+      "Cisco-IOS-XE-ospf:router-ospf": {
+        "ospf": {
+          "process-id": [
+            {
+              "id": {{pid}},
+              "area": [
+                {
+                  "area-id": {{area}}
+                }
+              ]
+            }
+          ],
+          "cost": {{cost}},
+          "hello-interval": {{hello}},
+          "priority": {{priority}},
+          "dead-interval": {{dead}}
+
+        }
+      }
+    },
+    "mop": {
+      "enabled": false,
+      "sysid": false
+    },
+    "Cisco-IOS-XE-ethernet:negotiation": {
+      "auto": true
+    }
+  }
+}

@@ -1,7 +1,8 @@
 from Device import Device
-from netmiko import ConnectHandler
 import jinja2, json
 import requests
+import yaml
+import re
 
 class IOSRouter(Device):
     def __init__(self, name, ip, type, username, password, port):
@@ -12,7 +13,7 @@ class IOSRouter(Device):
           'Content-Type': 'application/yang-data+json',
           'Authorization': 'Basic Y2lzY286Y2lzY29fMTIzNCE='
         }
-        self.auth=('developer', 'C1sco12345')
+        self.auth=('{}'.format(self.username), '{}'.format(self.password))
 
     def createLoopbackTesting(self, int_name, name, ip, mask):
         self.connection.enable()
@@ -37,29 +38,22 @@ class IOSRouter(Device):
             return 404, "No se ha encontrado ningun dispositivo con IP {}".format(self.ip)
 
     def editInterface(self, int_name, desc, ip, mask):
-        self.connection.enable()
+        #self.connection.enable()
         #self.connection.config_mode('config t')
         #cmd = ['int Loopback 834', 'ip address 1.1.1.1 255.255.255.255']
-
-
-        headers = {
-          'Accept': 'application/yang-data+json',
-          'Content-Type': 'application/yang-data+json',
-          'Authorization': 'Basic Y2lzY286Y2lzY29fMTIzNCE='
-        }
 
 
         data = {'interfaces': []}
 
         #dataResponse = json.loads(response.text)
-        f = open('/Templates/CiscoIOS/cisco_interfaces.j2')
+        f = open('Templates/CiscoIOS/cisco_interfaces.j2')
         text = f.read()
         template = jinja2.Template(text)
         config = template.render(int_name=int_name,
                                  ip=ip,
                                  mask=mask, description=desc)
 
-        response = requests.put(url + "ietf-interfaces:interfaces/interface={}".format(int_name),
+        response = requests.put(self.baseUrl + "ietf-interfaces:interfaces/interface={}".format(int_name),
                                 auth=self.auth ,headers=self.connection, data = config, verify=True)
         if response.text == '':
             print("si")
@@ -77,17 +71,85 @@ class IOSRouter(Device):
         except:
             return {}, 404
 
+    def getOspfData(self):
+        data = {'ospf': {'routerId': 'No configurado', 'processId': 'No configurado', 'interfaces': {}}}
+        try:
+            response = requests.get(self.baseUrl + "Cisco-IOS-XE-native:native/interface" , auth=self.auth,
+                                        headers=self.connection, verify=True)
+
+
+            dataResponse = json.loads(response.text)
+
+            rid = []
+            pid = []
+
+            for intf in dataResponse['Cisco-IOS-XE-native:interface']:
+                for i in range(0,len(dataResponse['Cisco-IOS-XE-native:interface'][intf])):
+                    print(dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['ip'].keys())
+                    if 'Cisco-IOS-XE-ospf:router-ospf' in dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['ip'].keys():
+                        intName = '{}{}'.format(intf, dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['name'])
+                        data['ospf']['interfaces'].update({intName : {}})
+                        dataOspf=dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['ip']['Cisco-IOS-XE-ospf:router-ospf']['ospf']
+                        print(dataOspf)
+                        data['ospf']['interfaces'][intName]['area'] = dataOspf['process-id'][0]['area'][0]['area-id']
+                        data['ospf']['interfaces'][intName]['helloTimer'] = dataOspf['hello-interval']
+                        data['ospf']['interfaces'][intName]['coste'] = dataOspf['cost']
+                        data['ospf']['interfaces'][intName]['deadTimer'] = dataOspf['dead-interval']
+                        data['ospf']['interfaces'][intName]['priority'] = dataOspf['priority']
+
+            response = requests.get(self.baseUrl + "Cisco-IOS-XE-native:native/router/router-ospf" , auth=self.auth,
+                                        headers=self.connection, verify=True)
+            dataResponse = json.loads(response.text)
+            if 'ospf' in dataResponse['Cisco-IOS-XE-ospf:router-ospf'].keys():
+                for process in range(0,len(dataResponse['Cisco-IOS-XE-ospf:router-ospf']['ospf']['process-id'])):
+                    pid.append(dataResponse['Cisco-IOS-XE-ospf:router-ospf']['ospf']['process-id'][process]['id'])
+                    rid.append(dataResponse['Cisco-IOS-XE-ospf:router-ospf']['ospf']['process-id'][process]['router-id'])
+            data['ospf']['routerId'] = str(rid).strip("[]''")
+            data['ospf']['processId'] = str(pid).strip("[]")
+            return yaml.dump(data, default_flow_style=False), 201
+                    #data['ospf']['routerId']= response[0]['vrfs']['default']['instList'][str(pid)]
+        except Exception as e:
+            return yaml.dump(data, default_flow_style=False), 404
+
     def createOspf(self, data):
-        f = open('Templates/CiscoIOS/cisco_ospf.j2')
-        text = f.read()
-        template = jinja2.Template(text)
-        config = template.render(pid= data['ProcessId'],
-                                 rid=data['RouterId'],
-                                 interfaces=data['interfaces']).split('\n')
-        output = self.connection.send_config_set(config)
-        if '%' in output:
-            start = output.find("%")
-            substring = output[start:start+60]
-            return substring, 404
-        else:
-            return 'OSPF configurado correctamentamente en {}'.format(self.name), 201
+        try:
+            f1 = open('Templates/CiscoIOS/cisco_ospf_interfaces.j2')
+            f2 = open('Templates/CiscoIOS/cisco_ospf_process.j2')
+
+            if data['ospf']['processId']:
+                text = f2.read()
+                template = jinja2.Template(text)
+                config = template.render(pid= int(data['ospf']["processId"]),
+                                        rid = data['ospf']["routerId"])
+                response = requests.put(self.baseUrl + 'Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id={}'.format(data['ospf']['processId']),
+                                        auth=self.auth,
+                                        headers=self.connection,
+                                        data = config, verify=False)
+            for intf in data['ospf']['interfaces']:
+                if data['ospf']['interfaces'][intf]:
+                    match = re.match(r"([a-z]+)([0-9]+)", intf, re.I)
+                    if match:
+                        items = match.groups()
+                        text = f1.read()
+                        template = jinja2.Template(text)
+                        config = template.render(pid= int(data['ospf']["processId"]),
+                                                 int_name=items[0], int_num=items[1],
+                                                 hello = data['ospf']['interfaces'][intf]['helloTimer'],
+                                                 dead = data['ospf']['interfaces'][intf]['deadTimer'],
+                                                 priority = data['ospf']['interfaces'][intf]['priority'],
+                                                 cost = int(data['ospf']['interfaces'][intf]['coste']),
+                                                 area =  data['ospf']['interfaces'][intf]['area'])
+                        requests.delete(self.baseUrl + 'Cisco-IOS-XE-native:native/interface/{}={}/ip/router-ospf'.format(items[0], items[1]), auth=self.auth,headers=self.connection, verify=False)
+
+                        response = requests.put(self.baseUrl + 'Cisco-IOS-XE-native:native/interface/{}={}'.format(items[0], items[1]),
+                                                auth=self.auth,
+                                                headers=self.connection,
+                                                data = config, verify=False)
+                        print(response.text)
+                        if("errors" not in response.text):
+                            print(response.text)
+                            return "OSPF configurado correctamente en {}".format(self.name), 201
+                        else:
+                            return "{}".format(json.loads(response.text)['errors']['error'][0]["error-message"]), 404
+        except Exception as e:
+            return '{}'.format(e), 404

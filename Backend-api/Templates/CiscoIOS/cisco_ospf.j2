@@ -1,7 +1,0 @@
-router ospf {{ pid }}
-  router-id {{ rid }}
-{% for intf in interfaces %}
-  interface {{ intf }}
-    ip ospf {{ pid }} area {{ interfaces[intf] }}
-    no shutdown
-{% endfor %}
