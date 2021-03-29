@@ -32,7 +32,7 @@ class DeviceConfigView(tk.Toplevel):
         btnRouting.pack(padx=10, pady=10)
 
         btnHA = tk.Button(leftFrame, text='High Availability',
-                           image=btnBlue, compound='center', fg="white")
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDeviceHA(self, self.name))
         btnHA.image=btnBlue
         btnHA.pack(padx=10, pady=10)
 
@@ -63,8 +63,6 @@ class DeviceConfigView(tk.Toplevel):
 
     def clickedViewInt(self):
         interfaces = self.controller.getInterfacesList(self.name)
-        print("TYPEEEEEE\n")
-        print(type(interfaces))
         DeviceConfigInterfacesView(self, self.controller, self.name, interfaces)
 
 

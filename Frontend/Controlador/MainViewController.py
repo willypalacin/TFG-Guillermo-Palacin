@@ -7,6 +7,7 @@ import requests, json
 import yaml
 from Modelo.Device import Device
 from Vista.DeviceConfigInterfacesView import DeviceConfigInterfacesView
+from Vista.DeviceConfigHAView import DeviceConfigHAView
 
 BASE = "http://127.0.0.1:5000/"
 
@@ -24,6 +25,7 @@ class MainViewController:
 
 
 
+
     def addNewDevice(self, window,data):
         window.statusLabel.pack()
         window.statusLabel.config(fg="black", text = "Estableciendo conexion...")
@@ -37,15 +39,18 @@ class MainViewController:
             window.statusLabel.config(fg="red", text = "No se ha encontrado dispositivo")
             self.mainView.addMessageToConsole(response.content, "Red")
 
+
     def clickedConfigurationDevice(self, window, event, name):
         DeviceConfigView(self, window, name)
         #print("HOLQ")
     def clickedDeviceRouting(self, window, name):
         interfaces = self.getInterfacesList(name)
         dataOspf = self.getOspfData(name)
-
-
         DeviceConfigRoutingView(window, self, name, interfaces['interfaces'], dataOspf)
+
+    def clickedDeviceHA(self, window, name):
+        interfaces = self.getInterfacesList(name)
+        DeviceConfigHAView(window, self, name, interfaces['interfaces'], "blabla \n bla \n bla")
 
     def createInterface(self, window, name, data):
         response = requests.put(BASE + "device/{}/interfaces/interface".format(name), json.dumps(data))
@@ -68,6 +73,16 @@ class MainViewController:
             window.destroy()
         else:
             self.mainView.addMessageToConsole(response.content, "Red")
+
+    def createVrrp(self ,window, data, name):
+        response = requests.put(BASE + "device/{}/ha/vrrp".format(name), json.dumps(data))
+        if response.status_code == 201:
+            self.mainView.addMessageToConsole(response.content, "Green")
+            window.destroy()
+        else:
+            self.mainView.addMessageToConsole(response.content, "Red")
+
+
 
 
 

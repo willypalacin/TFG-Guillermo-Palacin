@@ -49,6 +49,12 @@ def addOspf(device_name):
     msg, code = device.createOspf(args)
     return msg, code
 
+@app.route('/device/<string:device_name>/ha/vrrp',methods = ['PUT'])
+def addVrrp(device_name):
+    args = json.loads(request.data)
+    device = getDeviceByName(device_name)
+    msg, code = device.createVrrp(args)
+    return msg, code
 
 class DeviceAddHandler(Resource):
     def addDeviceByType(self, args):

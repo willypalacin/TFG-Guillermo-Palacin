@@ -1,0 +1,29 @@
+<config>
+  <configuration>
+             <interfaces>
+                 <interface>
+                     <name>{{int_name}}</name>
+                     <unit>
+                         <name>0</name>
+                         <family>
+                             <inet>
+                                 <address>
+                                     <name>{{ip_int}}</name>
+                                     <vrrp-group>
+                                         <name>{{group}}</name>
+                                         <virtual-address>{{virtual_ip}}</virtual-address>
+                                         {% if priority %}
+                                         <priority>{{priority}}</priority>
+                                         {% endif %}
+                                         {% if preempt %}
+                                           <preempt> </preempt>
+                                         {% endif %}
+                                     </vrrp-group>
+                                 </address>
+                             </inet>
+                         </family>
+                     </unit>
+                 </interface>
+             </interfaces>
+     </configuration>
+   </config>

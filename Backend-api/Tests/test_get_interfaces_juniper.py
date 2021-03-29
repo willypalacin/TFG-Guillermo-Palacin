@@ -3,7 +3,7 @@ import xmltodict
 from xml.etree import ElementTree as ET
 
 try:
-    device = manager.connect(host='66.129.235.11', port=44000, username='jcluser', password='Juniper!1', hostkey_verify=False, device_params={'name': 'junos'}, allow_agent=False, look_for_keys=False, timeout=3)
+    device = manager.connect(host='66.129.235.11', port=37000, username='jcluser', password='Juniper!1', hostkey_verify=False, device_params={'name': 'junos'}, allow_agent=False, look_for_keys=False, timeout=3)
     netconf_data = """
         <config>
           <configuration>

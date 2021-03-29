@@ -102,3 +102,38 @@ class JunosOSRouter(Device):
             return 'OSPF Configurado correctamente en {}'.format(self.name), 201
         except Exception as e:
             return '{}'.format(e), 404
+
+    def createVrrp(self, data):
+        try:
+             f = open('Templates/JunosOS/junos_vrrp.j2')
+             text = f.read()
+             intName = list(data['vrrp'].keys())[0]
+             print(data)
+             get_filter = """
+             <configuration>
+                 <interfaces>
+
+                 </interfaces>
+             </configuration>
+             """
+             nc_get_reply = self.connection.get(('subtree', get_filter))
+
+             ip_int = ""
+             dict_int = xmltodict.parse(str(nc_get_reply))
+
+             for intf in dict_int['rpc-reply']['data']['configuration']['interfaces']['interface']:
+
+                if intf['name'] == intName:
+                    ip_int = intf['unit']['family']['inet']['address']['name']
+                    template = jinja2.Template(text)
+                    config_netconf = template.render(int_name=intName, ip_int=ip_int,
+                                             group=data['vrrp'][intName]['grupo'], priority=data['vrrp'][intName]['priority'],
+                                             preempt=data['vrrp'][intName]['preempt'], virtual_ip=data['vrrp'][intName]['ipVrrp'])
+                    print(config_netconf)
+                    netconf_reply = self.connection.edit_config(target='candidate', config=config_netconf)
+                    print(netconf_reply)
+                    self.connection.commit()
+                    return "VRRP configurado correctamente en {}".format(self.name), 201
+
+        except Exception as e:
+         return "Necesitas configurar la interfaz primero para activar VRRP", 404

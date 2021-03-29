@@ -39,7 +39,8 @@ try:
                                             dead = data['ospf']['interfaces'][intf]['deadTimer'],
                                             priority = data['ospf']['interfaces'][intf]['priority'],
                                             cost = int(data['ospf']['interfaces'][intf]['coste']),
-                                            area =  data['ospf']['interfaces'][intf]['area'])
+
+
 
                 response = requests.put(url + 'Cisco-IOS-XE-native:native/interface/{}={}'.format(items[0], items[1]),
                                         auth=('developer', 'C1sco12345'),
