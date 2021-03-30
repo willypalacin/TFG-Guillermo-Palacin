@@ -80,7 +80,7 @@ class AristaSwitch(Device):
 
 
     def createOspf(self, data):
-        
+
         try:
             response = self.connection.run_commands('show ip ospf')
             if response[0]['vrfs'] != {}:
@@ -102,3 +102,20 @@ class AristaSwitch(Device):
         #print (ospf_creation)
         except Exception as e:
             return '{}'.format(e), 404
+
+
+    def createVrrp(self, data):
+        try:
+            commands = ['enable', 'configure']
+            for intf in data['vrrp']:
+              commands.append("interface {}".format(intf))
+              commands.append("vrrp {} priority-level {}".format(data['vrrp'][intf]['grupo'], data['vrrp'][intf]['priority']))
+              commands.append("vrrp {} ipv4 {}".format(data['vrrp'][intf]['grupo'], data['vrrp'][intf]['ipVrrp']))
+              print(data)
+              if data['vrrp'][intf]['preempt'] != 0:
+                   commands.append("vrrp {} {}".format(data['vrrp'][intf]['grupo'], 'preempt'))
+              print(commands)
+              creationVrrp = self.connection.run_commands(commands)
+              return "VRRP configurado correctamente en {}".format(self.name), 201
+        except Exception as e:
+         return "Necesitas configurar la interfaz primero para activar VRRP", 404

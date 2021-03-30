@@ -153,3 +153,26 @@ class IOSRouter(Device):
                             return "{}".format(json.loads(response.text)['errors']['error'][0]["error-message"]), 404
         except Exception as e:
             return '{}'.format(e), 404
+
+    def createVrrp(self, data):
+        try:
+            f = open('Templates/CiscoIOS/cisco_vrrp.j2')
+            for intf in data['vrrp']:
+                match = re.match(r"([a-z]+)([0-9]+)", intf, re.I)
+                if match:
+                    items = match.groups()
+                    text = f.read()
+                    template = jinja2.Template(text)
+                    config_restconf = template.render(group=data['vrrp'][intf]['grupo'], priority=data['vrrp'][intf]['priority'],
+                                             preempt=data['vrrp'][intf]['preempt'], virtual_ip=data['vrrp'][intf]['ipVrrp'])
+
+                    response = requests.put(self.baseUrl + 'Cisco-IOS-XE-native:native/interface/{}={}/vrrp'.format(items[0], items[1]),
+                                            auth=self.auth,
+                                            headers=self.connection,
+                                            data = config_restconf, verify=False)
+                    if "errors" not in response.text:
+                        return "VRRP configurado correctamente en {}".format(self.name), 201
+                    else:
+                        return "Comando incosistente, recuerda que la IP virtual, debe pertenecer a la IP de la interfaz", 404
+        except:
+            return "Necesitas configurar la interfaz primero para activar VRRP", 500

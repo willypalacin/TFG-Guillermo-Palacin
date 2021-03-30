@@ -1,0 +1,30 @@
+
+{
+    "Cisco-IOS-XE-vrrp:vrrp": {
+        "vrrp-group-v2": [
+            {
+                "group-id": "{{group}}",
+                "ip": {
+                    "primary": {
+                        "address": "{{virtual_ip}}"
+                    }
+                },
+                {%- if preempt != 0 -%}
+                "preempt-config": {
+                    "preempt": "true"
+                },
+                {%- else -%}
+                "preempt-config": {
+                    "preempt": "false"
+                },
+                {%- endif -%}
+                {%- if priority  -%}
+                "priority": "{{priority}}"
+                {%- else -%}
+                "priority": 100
+                {%- endif -%}
+
+            }
+        ]
+    }
+}
