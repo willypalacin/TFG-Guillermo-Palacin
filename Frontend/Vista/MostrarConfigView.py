@@ -1,28 +1,25 @@
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
-from Vista.DeviceConfigInterfacesView import DeviceConfigInterfacesView
-from Vista.MostrarConfigView import MostrarConfigView
 
-class DeviceConfigView(tk.Toplevel):
-    def __init__(self, controller, rootWindow, name):
+
+class MostrarConfigView(tk.Toplevel):
+    def __init__(self, controller, rootWindow):
         super().__init__(rootWindow, height=700, width=560, bg="white", highlightbackground="#00A2FF", highlightthickness=4)
         self.controller = controller
-        self.name = name
-        self.title("Configuracion de {}.".format(name))
+        self.title("Mostrar configuracion")
         self.update()
 
-        btnBlue = PhotoImage(file = 'Vista/assets/rect_blue_4.png')
+        btnBlue = PhotoImage(file = 'Vista/assets/btn_verde.png')
         topFrame = Frame(self, bg="white")
         topFrame.pack(side=TOP)
-        Label(topFrame, text="Configuracion de {}.".format(name), font=("Andale Mono",16)).pack(side=BOTTOM, pady=(20,10))
+        Label(topFrame, text="Visualizar configuración", font=("Andale Mono",16)).pack(side=BOTTOM, pady=(20,10))
 
         leftFrame = Frame(self, bg="white")
         leftFrame.pack(side=LEFT)
-        Label(leftFrame, text="N3", font=("Andale Mono",17)).pack(side=TOP, pady=(20,10))
 
-        btnIntf = tk.Button(leftFrame, text='Conf Interfaces \n y subinterfaces',
-                           image=btnBlue, command=lambda:self.clickedViewInt() ,compound='center', fg="white", width=self.winfo_width()/6)
+        btnIntf = tk.Button(leftFrame, text='Ver resumen \n Interfaces',
+                           image=btnBlue, command=lambda:self.showInterfaces() ,compound='center', fg="white", width=self.winfo_width()/6)
         btnIntf.image=btnBlue
         btnIntf.pack(padx=10, pady=10)
 
@@ -43,7 +40,7 @@ class DeviceConfigView(tk.Toplevel):
 
         rightFrame = Frame(self, bg="white")
         rightFrame.pack(side=RIGHT)
-        Label(rightFrame, text="N2", font=("Andale Mono",17)).pack(side=TOP, padx=(30,70))
+
 
         btnVlan = tk.Button(rightFrame, text='Creacion VLANs',
                            image=btnBlue, compound='center', fg="white")
@@ -61,12 +58,5 @@ class DeviceConfigView(tk.Toplevel):
 
         btnSTP.pack(padx=(30,70),pady=10)
 
-    def clickedViewInt(self):
-        interfaces = self.controller.getInterfacesList(self.name)
-        DeviceConfigInterfacesView(self, self.controller, self.name, interfaces)
-
-
-
-
-    def hola(self):
-        print("HOLA")
+    def showInterfaces(self):
+        self.controller.showInterfacesAll(self)

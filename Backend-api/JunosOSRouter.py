@@ -4,6 +4,10 @@ import jinja2, json
 from netaddr import IPAddress
 import xmltodict
 import yaml
+from jnpr.junos import Device as Dev
+from lxml import etree
+import json
+import jxmlease
 
 class JunosOSRouter(Device):
     def __init__(self, name, ip, type, username, password, port):
@@ -18,6 +22,9 @@ class JunosOSRouter(Device):
                                      look_for_keys=False, timeout=3)
 
             self.connection = connection
+            self.pyez = Dev(host=self.ip, user=self.username, passwd=self.password, port=36000)
+            self.pyez.open()
+
             print("HOLA")
             return 201, "Dispositivo {} anadido satisfactoriamente".format(self.name)
         except:
@@ -30,7 +37,6 @@ class JunosOSRouter(Device):
         template = jinja2.Template(text)
         config_netconf = template.render(int_name=int_name, ip=ip,
                                  mask=maskBits, description=desc)
-
 
         try:
             netconf_reply = self.connection.edit_config(target='candidate', config=config_netconf)
@@ -137,3 +143,31 @@ class JunosOSRouter(Device):
 
         except Exception as e:
          return "Necesitas configurar la interfaz primero para activar VRRP", 404
+
+    def showInterfaces(self):
+        try:
+            rpc = self.pyez.rpc.get_interface_information(terse=True, normalize=True)
+            rpc_xml = etree.tostring(rpc, pretty_print=True, encoding='unicode')
+            interfaces = rpc.findall('.//physical-interface')
+            showInterfaces = {}
+
+            for intf in interfaces:
+                try:
+                    nom = intf.find('./name').text
+                    adminStatus = intf.find('./logical-interface/admin-status').text
+                    proStatus = intf.find('./logical-interface/oper-status').text
+                    ip = "-"
+                    try:
+                        ip = intf.find('./logical-interface/address-family/interface-address/ifa-local').text
+                    except:
+                        pass
+                    showInterfaces[nom] = {
+                            'adminStatus' : adminStatus,
+                            'proStatus' : proStatus,
+                            'ip' : ip,
+                        }
+                except:
+                    pass
+            return showInterfaces
+        except:
+            return {}

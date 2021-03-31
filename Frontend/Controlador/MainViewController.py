@@ -8,6 +8,7 @@ import yaml
 from Modelo.Device import Device
 from Vista.DeviceConfigInterfacesView import DeviceConfigInterfacesView
 from Vista.DeviceConfigHAView import DeviceConfigHAView
+from Vista.MostrarConfigView import MostrarConfigView
 
 BASE = "http://127.0.0.1:5000/"
 
@@ -23,8 +24,15 @@ class MainViewController:
         #DeviceConfigRoutingView(window, self, "R1", ["GigabitEthernet1", "GigabitEthernet2"])
         AddDeviceView(self, window)
 
+    def showInterfacesAll(self, window):
+        print("Entra")
+        response = requests.get(BASE + "devices/show/interfaces/all")
+        print(response.text)
 
 
+
+    def clickedMostrarConfiguracion(self, window):
+        MostrarConfigView(self, window)
 
     def addNewDevice(self, window,data):
         window.statusLabel.pack()

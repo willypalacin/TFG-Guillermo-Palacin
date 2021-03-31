@@ -1,8 +1,11 @@
 from Device import Device
+from ntc_templates.parse import parse_output
+from netmiko import ConnectHandler
 import jinja2, json
 import requests
 import yaml
 import re
+
 
 class IOSRouter(Device):
     def __init__(self, name, ip, type, username, password, port):
@@ -14,6 +17,10 @@ class IOSRouter(Device):
           'Authorization': 'Basic Y2lzY286Y2lzY29fMTIzNCE='
         }
         self.auth=('{}'.format(self.username), '{}'.format(self.password))
+        self.c_netmiko = ConnectHandler(host = self.ip, username=self.username,
+                                         password=self.password,
+                                         device_type = 'cisco_ios',
+                                         port=22)
 
     def createLoopbackTesting(self, int_name, name, ip, mask):
         self.connection.enable()
@@ -33,6 +40,7 @@ class IOSRouter(Device):
                                     auth=self.auth,
                                     headers=self.connection,
                                     verify=True)
+            self.c_netmiko.enable()
             return 201, "Dispositivo {} anadido satisfactoriamente".format(self.name)
         except:
             return 404, "No se ha encontrado ningun dispositivo con IP {}".format(self.ip)
@@ -176,3 +184,19 @@ class IOSRouter(Device):
                         return "Comando incosistente, recuerda que la IP virtual, debe pertenecer a la IP de la interfaz", 404
         except:
             return "Necesitas configurar la interfaz primero para activar VRRP", 500
+
+    def showInterfaces(self):
+         try:
+             interfaces = self.c_netmiko.send_command('show ip int brief')
+
+             vlan_parsed = parse_output(platform="cisco_ios", command="show ip interface brief", data=interfaces)
+             showInterfaces = {}
+             for intf in vlan_parsed:
+                 showInterfaces[intf['intf']] = {
+                         'adminStatus' : intf['status'],
+                         'proStatus' : intf['proto'],
+                         'ip' : intf['ipaddr'],
+             }
+             return showInterfaces
+         except:
+             return {}

@@ -36,6 +36,16 @@ def getInterfacesList(device_name):
     interfaces, status_code = device.getInterfacesList()
     return interfaces, status_code
 
+@app.route('/devices/show/interfaces/all',methods = ['GET'])
+def getShowInterfaces():
+    data = {}
+    for device in devices:
+        data[device.getName()] = device.showInterfaces()
+        print(device.showInterfaces)
+        print (data)
+    return data, 201
+
+
 @app.route('/device/<string:device_name>/protocols/ospf',methods = ['GET'])
 def getOspfData(device_name):
     device = getDeviceByName(device_name)
@@ -66,7 +76,7 @@ class DeviceAddHandler(Resource):
             return device
         if args["type"] == 'junos_os':
             device = JunosOSRouter(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
-
+            print (args['type'])
             return device
         return 0
 
@@ -79,7 +89,6 @@ class DeviceAddHandler(Resource):
         args = device_post.parse_args()
 
         device = self.addDeviceByType(args)
-        print("DEICE NAME: " + device.getType())
 
         status_code, msg = device.checkConnectivity()
         if status_code == 201:

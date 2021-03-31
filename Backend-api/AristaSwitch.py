@@ -119,3 +119,17 @@ class AristaSwitch(Device):
               return "VRRP configurado correctamente en {}".format(self.name), 201
         except Exception as e:
          return "Necesitas configurar la interfaz primero para activar VRRP", 404
+
+    def showInterfaces(self):
+        try:
+            interfaces = self.connection.run_commands(['enable', 'show ip interface brief'])[1]['interfaces']
+            showInterfaces = {}
+            for intf in interfaces:
+                showInterfaces[intf] = {
+                        'adminStatus' : interfaces[intf]['interfaceStatus'],
+                        'proStatus' : interfaces[intf]['lineProtocolStatus'],
+                        'ip' : interfaces[intf]['interfaceAddress']['ipAddr']['address'],
+                    }
+            return showInterfaces
+        except:
+            return {}

@@ -14,11 +14,6 @@ class MainView(tk.Tk):
         self.prueba = 1
 
 
-
-
-    def hola(self):
-        print("PULSADO")
-
     def paintMainWindow(self):
         self.title("Network define")
         self.geometry("1700x1000")
@@ -39,7 +34,7 @@ class MainView(tk.Tk):
         addDeviceBtn.pack(side=LEFT)
         addDeviceBtn.image = btnAddImg
 
-        removeDeviceBtn = Button(topFrame, height=26, width=26, borderwidth=0,command=self.hola, image=btnRemImg, padx=0,pady=0)
+        removeDeviceBtn = Button(topFrame, height=26, width=26, borderwidth=0,command=self.mostrarConfig, image=btnRemImg, padx=0,pady=0)
         removeDeviceBtn.pack(side=LEFT, padx= 20)
         removeDeviceBtn.image = btnRemImg
 
@@ -53,15 +48,15 @@ class MainView(tk.Tk):
         butonOptionsFrame = Frame(rightFrame,background="#4F535A",height=int() ,width=int(self.winfo_width()/3.5),highlightbackground="white", highlightthickness=1)
         butonOptionsFrame.pack(side=TOP, fill=BOTH)
 
-        showCurrentBtn = Button(butonOptionsFrame, borderwidth=0,command=self.hola, image=rightButtonsImg,highlightthickness=0, bd = 0)
-        showCurrentBtn.image = rightButtonsImg
-        showCurrentBtn.pack(pady=(40,20))
+        showConfigBtn = Button(butonOptionsFrame, text="Mostrar Configuración",borderwidth=0,command=self.mostrarConfig, image=rightButtonsImg,highlightthickness=0, bd = 0, fg="black", compound='center', font=("Helvetica", 15))
+        showConfigBtn.image = rightButtonsImg
+        showConfigBtn.pack(pady=(40,20))
 
-        showCurrentBtn = Button(butonOptionsFrame, borderwidth=0,command=self.hola, image=rightButtonsImg,highlightthickness=0, bd = 0)
+        showCurrentBtn = Button(butonOptionsFrame, borderwidth=0,command=self.mostrarConfig, image=rightButtonsImg,highlightthickness=0, bd = 0)
         showCurrentBtn.image = rightButtonsImg
         showCurrentBtn.pack(pady=20)
 
-        showCurrentBtn = Button(butonOptionsFrame, borderwidth=0,command=self.hola, image=rightButtonsImg,highlightthickness=0, bd = 0)
+        showCurrentBtn = Button(butonOptionsFrame, borderwidth=0,command=self.mostrarConfig, image=rightButtonsImg,highlightthickness=0, bd = 0)
         showCurrentBtn.image = rightButtonsImg
         showCurrentBtn.pack(pady=(20,40))
 
@@ -96,6 +91,11 @@ class MainView(tk.Tk):
         xpos=(locx+event.x)
         ypos=(locy+event.y)
         myCanvas.place(x=xpos, y=ypos)
+
+
+    def mostrarConfig(self):
+        self.mainViewController.clickedMostrarConfiguracion(self)
+
 
 
     def paintDevice(self, name):
