@@ -25,11 +25,12 @@ class MainViewController:
         AddDeviceView(self, window)
 
     def showInterfacesAll(self, window):
-        print("Entra")
         response = requests.get(BASE + "devices/show/interfaces/all")
         print(response.text)
 
-
+    def showIpRoute(self, window):
+        response = requests.get(BASE + "devices/show/ip/route")
+        print(response.text)
 
     def clickedMostrarConfiguracion(self, window):
         MostrarConfigView(self, window)

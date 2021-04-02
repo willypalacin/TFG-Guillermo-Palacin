@@ -133,3 +133,32 @@ class AristaSwitch(Device):
             return showInterfaces
         except:
             return {}
+
+    def showIpRoute(self):
+        try:
+            ipRoutes = self.connection.run_commands(['enable', 'show ip route'])[1]
+
+            showIpRoute = []
+
+            for route in ipRoutes['vrfs']['default']['routes']:
+                data = {}
+                for via in ipRoutes['vrfs']['default']['routes'][route]['vias']:
+                    data['protocolo'] = ipRoutes['vrfs']['default']['routes'][route]['routeType']
+                    data['gateway_if'] = via['interface']
+                    if 'nexthopAddr' in via.keys():
+                        data['gateway'] = via['nexthopAddr']
+                    else:
+                        data['dateway'] = ''
+                    data['red'] = route
+                    if 'preference' in ipRoutes['vrfs']['default']['routes'][route].keys():
+                        data['distancia'] = ipRoutes['vrfs']['default']['routes'][route]['preference']
+                    else:
+                        data['distancia'] = ''
+                    if 'metric' in ipRoutes['vrfs']['default']['routes'][route].keys():
+                        data['metrica'] =  ipRoutes['vrfs']['default']['routes'][route]['metric']
+
+                    showIpRoute.append(data)
+
+            return showIpRoute
+        except:
+            return {}

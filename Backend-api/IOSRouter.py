@@ -200,3 +200,22 @@ class IOSRouter(Device):
              return showInterfaces
          except:
              return {}
+
+    def showIpRoute(self):
+         try:
+             command = self.c_netmiko.send_command('show ip route')
+             ipRoute = parse_output(platform="cisco_ios", command="show ip route", data=command)
+             showIpRoute = []
+             for route in ipRoute:
+                 data =  {
+                         'protocolo' : route['protocol'],
+                         'red' : route['network'] + "/"+ route['mask'],
+                         'distancia': route['distance'],
+                         'metrica': route['metric'],
+                         'gateway': route['nexthop_ip'],
+                         'gateway_if': route['nexthop_if']
+                     }
+                 showIpRoute.append(data)
+             return showIpRoute
+         except:
+             return {}

@@ -41,7 +41,14 @@ def getShowInterfaces():
     data = {}
     for device in devices:
         data[device.getName()] = device.showInterfaces()
-        print(device.showInterfaces)
+    return data, 201
+
+@app.route('/devices/show/ip/route',methods = ['GET'])
+def getShowIpRoute():
+    data = {}
+    for device in devices:
+        data[device.getName()] = device.showIpRoute()
+        print(device.showIpRoute)
         print (data)
     return data, 201
 

@@ -23,8 +23,8 @@ class MostrarConfigView(tk.Toplevel):
         btnIntf.image=btnBlue
         btnIntf.pack(padx=10, pady=10)
 
-        btnRouting = tk.Button(leftFrame, text='Routing Estático \n y Dinámico',
-                           image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDeviceRouting(self, self.name))
+        btnRouting = tk.Button(leftFrame, text='Ver Tabla\n Rutas',
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.showIpRouteClick())
         btnRouting.image=btnBlue
         btnRouting.pack(padx=10, pady=10)
 
@@ -60,3 +60,6 @@ class MostrarConfigView(tk.Toplevel):
 
     def showInterfaces(self):
         self.controller.showInterfacesAll(self)
+
+    def showIpRouteClick(self):
+        self.controller.showIpRoute(self)
