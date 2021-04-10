@@ -48,10 +48,23 @@ def getShowIpRoute():
     data = {}
     for device in devices:
         data[device.getName()] = device.showIpRoute()
-        print(device.showIpRoute)
-        print (data)
     return data, 201
 
+@app.route('/devices/show/vlan',methods = ['GET'])
+def getShowVlan():
+    data = {}
+    for device in devices:
+        data[device.getName()] = device.showVlan()
+    return data, 201
+
+@app.route('/devices/show/ospf/neighbors',methods = ['GET'])
+def getShowOspfNeigh():
+    data = {}
+    for device in devices:
+        data[device.getName()] = device.showOspfNeigh()
+        print(device.showOspfNeigh)
+        print (data)
+    return data, 201
 
 @app.route('/device/<string:device_name>/protocols/ospf',methods = ['GET'])
 def getOspfData(device_name):

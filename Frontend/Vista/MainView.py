@@ -52,11 +52,11 @@ class MainView(tk.Tk):
         showConfigBtn.image = rightButtonsImg
         showConfigBtn.pack(pady=(40,20))
 
-        showCurrentBtn = Button(butonOptionsFrame, borderwidth=0,command=self.mostrarConfig, image=rightButtonsImg,highlightthickness=0, bd = 0)
+        showCurrentBtn = Button(butonOptionsFrame,text="Exportar Template" ,borderwidth=0,command=self.mostrarConfig, image=rightButtonsImg,highlightthickness=0, bd = 0, fg="black", compound='center', font=("Helvetica", 15))
         showCurrentBtn.image = rightButtonsImg
         showCurrentBtn.pack(pady=20)
 
-        showCurrentBtn = Button(butonOptionsFrame, borderwidth=0,command=self.mostrarConfig, image=rightButtonsImg,highlightthickness=0, bd = 0)
+        showCurrentBtn = Button(butonOptionsFrame,text="Importar Configuracion" ,borderwidth=0,command=self.mostrarConfig, image=rightButtonsImg,highlightthickness=0, bd = 0, fg="black", compound='center', font=("Helvetica", 15))
         showCurrentBtn.image = rightButtonsImg
         showCurrentBtn.pack(pady=(20,40))
 

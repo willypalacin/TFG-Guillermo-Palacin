@@ -2,6 +2,8 @@ from Device import Device
 import json, pyeapi
 import yaml
 from netaddr import IPAddress
+import datetime
+import re
 
 
 class AristaSwitch(Device):
@@ -30,15 +32,22 @@ class AristaSwitch(Device):
 
     def editInterface(self, int_name, desc, ip, mask):
         maskBits = IPAddress(mask).netmask_bits()
-        command = self.connection.run_commands(['enable', 'configure', 'interface {}'.format(int_name), 'no switchport',
+        if "vlan" not in int_name.lower():
+            command = self.connection.run_commands(['enable', 'configure', 'interface {}'.format(int_name), 'no switchport',
                                                 'ip address {}/{}'.format(ip, maskBits),
                                                 'description {}'.format(desc)])
+        else:
+            command = self.connection.run_commands(['enable', 'configure', 'interface {}'.format(int_name),
+                                                'ip address {}/{}'.format(ip, maskBits),
+                                                'description {}'.format(desc)])
+
+
         print(command)
 
     def getInterfacesList(self):
         try:
             #version_info = eapi.run_commands(['enable', 'configure', 'interface Loopback11', 'ip address 1.2.2.2/24'])
-            interfaces = self.connection.api('interfaces').getall()
+            interfaces = self.connection.run_commands(['enable', 'show ip interface brief'])[1]['interfaces']
             data = {'interfaces': []}
             for key in interfaces:
                 if key != 'defaults':
@@ -123,16 +132,18 @@ class AristaSwitch(Device):
     def showInterfaces(self):
         try:
             interfaces = self.connection.run_commands(['enable', 'show ip interface brief'])[1]['interfaces']
-            showInterfaces = {}
+            showInterfaces = []
             for intf in interfaces:
-                showInterfaces[intf] = {
+                data = {
+                        'nombre': intf,
                         'adminStatus' : interfaces[intf]['interfaceStatus'],
                         'proStatus' : interfaces[intf]['lineProtocolStatus'],
                         'ip' : interfaces[intf]['interfaceAddress']['ipAddr']['address'],
                     }
+                showInterfaces.append(data)
             return showInterfaces
         except:
-            return {}
+            return []
 
     def showIpRoute(self):
         try:
@@ -148,7 +159,7 @@ class AristaSwitch(Device):
                     if 'nexthopAddr' in via.keys():
                         data['gateway'] = via['nexthopAddr']
                     else:
-                        data['dateway'] = ''
+                        data['gateway'] = ''
                     data['red'] = route
                     if 'preference' in ipRoutes['vrfs']['default']['routes'][route].keys():
                         data['distancia'] = ipRoutes['vrfs']['default']['routes'][route]['preference']
@@ -156,9 +167,48 @@ class AristaSwitch(Device):
                         data['distancia'] = ''
                     if 'metric' in ipRoutes['vrfs']['default']['routes'][route].keys():
                         data['metrica'] =  ipRoutes['vrfs']['default']['routes'][route]['metric']
+                    else:
+                        data['metrica'] = ''
+
 
                     showIpRoute.append(data)
 
             return showIpRoute
         except:
             return {}
+
+    def showOspfNeigh(self):
+        showOspfNeigh = []
+        try:
+            ospfNeigh = self.connection.run_commands(['enable', 'show ip ospf neighbor'])[1]
+            print
+            for neigh in ospfNeigh['vrfs']['default']['instList']:
+                for entry in ospfNeigh['vrfs']['default']['instList'][neigh]['ospfNeighborEntries']:
+                    data = {'neighbor_id': entry['routerId'],
+                            'priority': entry['priority'],
+                            'state': '{}/{}'.format(entry['adjacencyState'].upper(), entry['drState']),
+                            'dead_time': datetime.datetime.fromtimestamp(entry['inactivity']).strftime('%S'),
+                            'address': entry['interfaceAddress'],
+                            'interface': entry['interfaceName']
+                    }
+                    showOspfNeigh.append(data)
+            return showOspfNeigh
+        except Exception as e:
+            return []
+    def showVlan(self):
+        try:
+            vlanShow = self.connection.run_commands(['enable', 'show vlan'])[1]
+            showVlan = []
+            for vlan in vlanShow['vlans']:
+                data = {
+                    'vlan_id': vlan,
+                    'name': vlanShow['vlans'][vlan]['name'],
+                    'status': vlanShow['vlans'][vlan]['status'],
+                    'interfaces': []
+                }
+                for intf in vlanShow['vlans'][vlan]['interfaces']:
+                    data['interfaces'].append(intf)
+                showVlan.append(data)
+            return showVlan
+        except Exception as e:
+            return []

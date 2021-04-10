@@ -3,14 +3,17 @@ from Vista.AddDeviceView import AddDeviceView
 from Vista.DeviceConfigView import DeviceConfigView
 from Vista.DeviceConfigRoutingView import DeviceConfigRoutingView
 from Vista.MainView import MainView
-import requests, json
-import yaml
-from Modelo.Device import Device
 from Vista.DeviceConfigInterfacesView import DeviceConfigInterfacesView
 from Vista.DeviceConfigHAView import DeviceConfigHAView
 from Vista.MostrarConfigView import MostrarConfigView
+from Vista.DeviceShowsView import DeviceShowsView
+import requests, json
+import yaml
+from Modelo.Device import Device
+
 
 BASE = "http://127.0.0.1:5000/"
+
 
 class MainViewController:
 
@@ -21,16 +24,57 @@ class MainViewController:
 
 
     def clickedAddDevice(self, window):
-        #DeviceConfigRoutingView(window, self, "R1", ["GigabitEthernet1", "GigabitEthernet2"])
         AddDeviceView(self, window)
 
     def showInterfacesAll(self, window):
+        header =  {
+            "Interfaz":"nombre",
+            "IP":"ip",
+            "Status_Admin":"adminStatus",
+            "Protocolo":"proStatus"
+        }
         response = requests.get(BASE + "devices/show/interfaces/all")
+        DeviceShowsView(window, self, json.loads(response.text),header, "Visualización Interfaces", 4, 5)
         print(response.text)
 
     def showIpRoute(self, window):
         response = requests.get(BASE + "devices/show/ip/route")
+        header =  {
+            "Protocolo":"protocolo",
+            "Red":"red",
+            "Next_GW":"gateway",
+            "Interfaz":"gateway_if",
+            "Metrica":"metrica",
+            "Distancia":"distancia"
+        }
+        DeviceShowsView(window, self, json.loads(response.text),header, "Visualización Tabla Rutas", 4, 5)
         print(response.text)
+
+    def showOspfNeigh(self, window):
+        response = requests.get(BASE + "devices/show/ospf/neighbors")
+        header =  {
+            "Red":"address",
+            "Interfaz":"interface",
+            "ID_Vecino":"neighbor_id",
+            "Dead_Timer":"dead_time",
+            "Estado":"state",
+            "Prioridad":"priority"
+        }
+        DeviceShowsView(window, self, json.loads(response.text),header, "Visualización Vecinos OSPF", 4, 5)
+
+        print(response.text)
+
+    def showVlan(self, window):
+        header = {
+          'VLAN_ID': 'vlan_id',
+          'Nombre': 'name',
+          'Status': 'status',
+          'Interfaces': 'interfaces'
+        }
+        response = requests.get(BASE + "devices/show/vlan")
+        DeviceShowsView(window, self, json.loads(response.text),header, "Visualización VLANs", 4, 5)
+        print(response.text)
+
 
     def clickedMostrarConfiguracion(self, window):
         MostrarConfigView(self, window)

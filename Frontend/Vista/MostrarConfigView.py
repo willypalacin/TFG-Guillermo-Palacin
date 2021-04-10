@@ -28,8 +28,8 @@ class MostrarConfigView(tk.Toplevel):
         btnRouting.image=btnBlue
         btnRouting.pack(padx=10, pady=10)
 
-        btnHA = tk.Button(leftFrame, text='High Availability',
-                           image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDeviceHA(self, self.name))
+        btnHA = tk.Button(leftFrame, text='Ver vecinos \n OSPF',
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.showOspfNeighClick())
         btnHA.image=btnBlue
         btnHA.pack(padx=10, pady=10)
 
@@ -42,8 +42,8 @@ class MostrarConfigView(tk.Toplevel):
         rightFrame.pack(side=RIGHT)
 
 
-        btnVlan = tk.Button(rightFrame, text='Creacion VLANs',
-                           image=btnBlue, compound='center', fg="white")
+        btnVlan = tk.Button(rightFrame, text='Ver VLANs',
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.showVlansClick())
         btnVlan.image=btnBlue
         btnVlan.pack(padx=(30,70), pady=10)
 
@@ -63,3 +63,9 @@ class MostrarConfigView(tk.Toplevel):
 
     def showIpRouteClick(self):
         self.controller.showIpRoute(self)
+
+    def showOspfNeighClick(self):
+        self.controller.showOspfNeigh(self)
+
+    def showVlansClick(self):
+        self.controller.showVlan(self)

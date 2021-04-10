@@ -190,16 +190,18 @@ class IOSRouter(Device):
              interfaces = self.c_netmiko.send_command('show ip int brief')
 
              vlan_parsed = parse_output(platform="cisco_ios", command="show ip interface brief", data=interfaces)
-             showInterfaces = {}
+             showInterfaces = []
              for intf in vlan_parsed:
-                 showInterfaces[intf['intf']] = {
+                 data = {
+                         'nombre': intf['intf'],
                          'adminStatus' : intf['status'],
                          'proStatus' : intf['proto'],
                          'ip' : intf['ipaddr'],
-             }
+                 }
+                 showInterfaces.append(data)
              return showInterfaces
          except:
-             return {}
+             return []
 
     def showIpRoute(self):
          try:
@@ -219,3 +221,18 @@ class IOSRouter(Device):
              return showIpRoute
          except:
              return {}
+    def showOspfNeigh(self):
+        try:
+            ospfNeigh = self.c_netmiko.send_command('show ip ospf neighbor')
+            ospfNeighParsed = parse_output(platform="cisco_ios", command="show ip ospf neighbor", data=ospfNeigh)
+            return ospfNeighParsed
+        except:
+            return []
+
+    def showVlan(self):
+        try:
+            vlanShow = self.c_netmiko.send_command('show vlan')
+            vlanShowParsed = parse_output(platform="cisco_ios", command="show vlan", data=vlanShow)
+            return showVlanParsed
+        except:
+            return []

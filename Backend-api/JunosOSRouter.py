@@ -149,7 +149,7 @@ class JunosOSRouter(Device):
             rpc = self.pyez.rpc.get_interface_information(terse=True, normalize=True)
             rpc_xml = etree.tostring(rpc, pretty_print=True, encoding='unicode')
             interfaces = rpc.findall('.//physical-interface')
-            showInterfaces = {}
+            showInterfaces = []
 
             for intf in interfaces:
                 try:
@@ -161,11 +161,13 @@ class JunosOSRouter(Device):
                         ip = intf.find('./logical-interface/address-family/interface-address/ifa-local').text
                     except:
                         pass
-                    showInterfaces[nom] = {
+                    data = {
+                            'nombre': nom,
                             'adminStatus' : adminStatus,
                             'proStatus' : proStatus,
                             'ip' : ip,
-                        }
+                    }
+                    showInterfaces.append(data)
                 except:
                     pass
             return showInterfaces
@@ -206,3 +208,38 @@ class JunosOSRouter(Device):
             return showIpRoute
         except:
             return {}
+
+    def showOspfNeigh(self):
+        showOspfNeigh = []
+        try:
+            rpc = self.pyez.rpc.get_ospf_neighbor_information({'format':'json'}, extensive=True)
+            for neigh in rpc['ospf-neighbor-information'][0]['ospf-neighbor']:
+                data = {
+                    'neighbor_id': neigh['neighbor-id'][0]['data'],
+                    'priority': neigh['neighbor-priority'][0]['data'],
+                    'state':  neigh['ospf-neighbor-state'][0]['data'],
+                    'dead_time': neigh['activity-timer'][0]['data'],
+                    'address': neigh['neighbor-address'][0]['data'],
+                    'interface': neigh['interface-name'][0]['data'] }
+                showOspfNeigh.append(data)
+            return showOspfNeigh
+        except:
+            return []
+
+    def showVlan(self):
+        try:
+            rpc = self.pyez.rpc.get_vlan_information({'format':'json'})
+            showVlan = []
+            for vlan in rpc['l2ng-l2ald-vlan-instance-information'][0]['l2ng-l2ald-vlan-instance-group']:
+                data = {
+                    'vlan_id': vlan['l2ng-l2rtb-vlan-tag'][0]['data'],
+                    'name': vlan['l2ng-l2rtb-vlan-name'][0]['data'],
+                    'status': 'active',
+                    'interfaces': []
+                }
+                for intf in vlan['l2ng-l2rtb-vlan-member']:
+                    data['interfaces'].append(intf['l2ng-l2rtb-vlan-member-interface'][0]['data'])
+                showVlan.append(data)
+            return showVlan
+        except:
+            return []
