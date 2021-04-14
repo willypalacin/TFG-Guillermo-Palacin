@@ -6,7 +6,7 @@ import json
 import jxmlease
 import pprint
 
-dev = Device(host='66.129.235.12', user='jcluser', passwd='Juniper!1', port=33000)
+dev = Device(host='192.168.1.233', user='root', passwd='tfgtfg1', port=830)
 dev.open()
 #rsp = dev.rpc.get_interface_information(terse=True, normalize=True)
 #rpc_xml = etree.tostring(rsp, pretty_print=True, encoding='unicode')

@@ -7,6 +7,7 @@ from Vista.DeviceConfigInterfacesView import DeviceConfigInterfacesView
 from Vista.DeviceConfigHAView import DeviceConfigHAView
 from Vista.MostrarConfigView import MostrarConfigView
 from Vista.DeviceShowsView import DeviceShowsView
+from Vista.DeviceConfigVlansView import DeviceConfigVlansView
 import requests, json
 import yaml
 from Modelo.Device import Device
@@ -76,6 +77,9 @@ class MainViewController:
         print(response.text)
 
 
+    def clickedDeviceVlans(self, window,name):
+        DeviceConfigVlansView(window,self, name, "blabla\nblabla")
+
     def clickedMostrarConfiguracion(self, window):
         MostrarConfigView(self, window)
 
@@ -121,6 +125,14 @@ class MainViewController:
 
     def createRouting(self ,window, data, name):
         response = requests.put(BASE + "device/{}/protocols/ospf".format(name), json.dumps(data))
+        if response.status_code == 201:
+            self.mainView.addMessageToConsole(response.content, "Green")
+            window.destroy()
+        else:
+            self.mainView.addMessageToConsole(response.content, "Red")
+
+    def createVlans(self ,window, data, name):
+        response = requests.put(BASE + "device/{}/vlans".format(name), json.dumps(data))
         if response.status_code == 201:
             self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()

@@ -1,0 +1,30 @@
+<config>
+ <configuration>
+  {% if ip != ''%}
+ <interfaces>
+  <interface>
+      <name>irb</name>
+          <unit>
+              <name>{{vlan_id}}</name>
+                       <family>
+                           <inet>
+                               <address>
+                                   <name>{{ip}}</name>
+                               </address>
+                           </inet>
+                       </family>
+                   </unit>
+               </interface>
+           </interfaces>
+  {% endif %}
+    <vlans>
+        <vlan>
+            <name>{{vlan_name}}</name>
+              <vlan-id>{{vlan_id}}</vlan-id>
+                  {% if ip != '' %}
+                    <l3-interface>irb.{{vlan_id}}</l3-interface>
+                  {% endif %}
+        </vlan>
+    </vlans>
+  </configuration>
+</config>

@@ -79,6 +79,14 @@ def addOspf(device_name):
     msg, code = device.createOspf(args)
     return msg, code
 
+@app.route('/device/<string:device_name>/vlans',methods = ['PUT'])
+def addVlans(device_name):
+    args = json.loads(request.data)
+    device = getDeviceByName(device_name)
+    msg, code = device.createVlans(args)
+    print(args)
+    return msg, code
+
 @app.route('/device/<string:device_name>/ha/vrrp',methods = ['PUT'])
 def addVrrp(device_name):
     args = json.loads(request.data)

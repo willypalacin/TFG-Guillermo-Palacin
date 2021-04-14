@@ -111,6 +111,25 @@ class AristaSwitch(Device):
         #print (ospf_creation)
         except Exception as e:
             return '{}'.format(e), 404
+    def createVlans(self, data):
+        try:
+            commands = ["enable", "configure"]
+            if data['vlanId']:
+                commands.append("vlan {}".format(data['vlanId']))
+                if data['vlanNom']:
+                    commands.append("name {}".format(data['vlanNom']))
+                else:
+                    commands.append("name Vlan{}".format(data['vlanId']))
+            if data['layer3']:
+                if data['layer3']['ip']:
+                    commands.append("interface vlan {}".format(data['vlanId']))
+                    commands.append("ip address {}".format(data['layer3']['ip']))
+                    commands.append("no shutdown".format(data['layer3']['ip']))
+            vlan = self.connection.run_commands(commands)
+            return "VLANs Creadas correctamente en {}".format(self.name), 201
+        except Exception as e:
+            return '{}'.format(e), 404
+
 
 
     def createVrrp(self, data):

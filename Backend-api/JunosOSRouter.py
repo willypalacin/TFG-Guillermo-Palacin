@@ -94,6 +94,19 @@ class JunosOSRouter(Device):
             return yaml.dump(data, default_flow_style=False), 404
 
 
+    def createVlans(self,data):
+        try:
+            f = open('Templates/JunosOS/junos_vlan_interface.j2')
+            text = f.read()
+            template = jinja2.Template(text)
+            netconf_data = template.render(vlan_id = data['vlanId'], vlan_name=data['vlanNom'], ip= data['layer3']['ip'])
+            #print(netconf_data)
+            netconf_reply = self.connection.edit_config(target='candidate', config=netconf_data)
+            self.connection.commit()
+            return "VLANs creadas correctamente en {}".format(self.name), 201
+
+        except Exception as e:
+            return "Error al crear VLANs, no puede haber dos Vlans con el mismo prefijo de red", 404
 
 
     def createOspf(self, data):

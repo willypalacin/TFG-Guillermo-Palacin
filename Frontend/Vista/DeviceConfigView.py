@@ -46,7 +46,7 @@ class DeviceConfigView(tk.Toplevel):
         Label(rightFrame, text="N2", font=("Andale Mono",17)).pack(side=TOP, padx=(30,70))
 
         btnVlan = tk.Button(rightFrame, text='Creacion VLANs',
-                           image=btnBlue, compound='center', fg="white")
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDeviceVlans(self, self.name))
         btnVlan.image=btnBlue
         btnVlan.pack(padx=(30,70), pady=10)
 
