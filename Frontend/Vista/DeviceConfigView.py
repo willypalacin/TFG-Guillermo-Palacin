@@ -51,7 +51,7 @@ class DeviceConfigView(tk.Toplevel):
         btnVlan.pack(padx=(30,70), pady=10)
 
         btnAgg = tk.Button(rightFrame, text='Agregación Enlaces',
-                           image=btnBlue, compound='center', fg="white")
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDevicePortChannel(self, self.name))
         btnAgg.image=btnBlue
         btnAgg.pack(padx=(30,70),pady=10)
 

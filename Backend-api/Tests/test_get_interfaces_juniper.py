@@ -3,7 +3,7 @@ import xmltodict
 from xml.etree import ElementTree as ET
 
 try:
-    device = manager.connect(host='66.129.235.11', port=37000, username='jcluser', password='Juniper!1', hostkey_verify=False, device_params={'name': 'junos'}, allow_agent=False, look_for_keys=False, timeout=3)
+    device = manager.connect(host='192.168.1.233', port=830, username='root', password='tfgtfg1', hostkey_verify=False, device_params={'name': 'junos'}, allow_agent=False, look_for_keys=False, timeout=3)
     netconf_data = """
         <config>
           <configuration>
@@ -31,18 +31,19 @@ try:
 
     get_filter = """
     <configuration>
-        <groups>
-        </groups>
+        <interfaces>
+        </interfaces>
     </configuration>
     """
-    #nc_get_reply = device.get(('subtree', get_filter))
+    nc_get_reply = device.get(('subtree', get_filter))
+    print(nc_get_reply)
     data = {'interfaces': []}
-    res = device.command('show interfaces ge-0/0/* terse' , format='xml')
+    #########res = device.command('show interfaces ge-0/0/* terse' , format='xml')
     #hola = ET.fromstring(res)
-    data_xml = xmltodict.parse(str(res))
+    ####data_xml = xmltodict.parse(str(res))
 
-    for key in data_xml['rpc-reply']['interface-information']['physical-interface']:
-        print (key['name'])
+    ###for key in data_xml['rpc-reply']['interface-information']['physical-interface']:
+        ###print (key['name'])
 
 
     #json_d = json.loads(hola.text)

@@ -8,6 +8,7 @@ from Vista.DeviceConfigHAView import DeviceConfigHAView
 from Vista.MostrarConfigView import MostrarConfigView
 from Vista.DeviceShowsView import DeviceShowsView
 from Vista.DeviceConfigVlansView import DeviceConfigVlansView
+from Vista.DeviceConfigPortChannelView import DeviceConfigPortChannelView
 import requests, json
 import yaml
 from Modelo.Device import Device
@@ -17,6 +18,7 @@ BASE = "http://127.0.0.1:5000/"
 
 
 class MainViewController:
+
 
     def __init__(self):
         self.dispositivos = {}
@@ -105,6 +107,11 @@ class MainViewController:
         dataOspf = self.getOspfData(name)
         DeviceConfigRoutingView(window, self, name, interfaces['interfaces'], dataOspf)
 
+    def clickedDevicePortChannel(self, window, name):
+        interfaces = self.getInterfacesList(name)
+        DeviceConfigPortChannelView(window, self, name,interfaces['interfaces'], "blablabla\nblabla")
+
+
     def clickedDeviceHA(self, window, name):
         interfaces = self.getInterfacesList(name)
         DeviceConfigHAView(window, self, name, interfaces['interfaces'], "blabla \n bla \n bla")
@@ -132,7 +139,7 @@ class MainViewController:
             self.mainView.addMessageToConsole(response.content, "Red")
 
     def createVlans(self ,window, data, name):
-        response = requests.put(BASE + "device/{}/vlans".format(name), json.dumps(data))
+        response = requests.put(BASE + "device/{}/n2/vlans".format(name), json.dumps(data))
         if response.status_code == 201:
             self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()
@@ -141,6 +148,14 @@ class MainViewController:
 
     def createVrrp(self ,window, data, name):
         response = requests.put(BASE + "device/{}/ha/vrrp".format(name), json.dumps(data))
+        if response.status_code == 201:
+            self.mainView.addMessageToConsole(response.content, "Green")
+            window.destroy()
+        else:
+            self.mainView.addMessageToConsole(response.content, "Red")
+
+    def createPortChannel(self ,window, data, name):
+        response = requests.put(BASE + "device/{}/n2/lacp".format(name), json.dumps(data))
         if response.status_code == 201:
             self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()

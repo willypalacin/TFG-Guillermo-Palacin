@@ -1,0 +1,33 @@
+<config>
+  <configuration>
+            <interfaces>
+                <interface>
+                    <name>{{intf}}</name>
+                    <unit>
+                        <name>0</name>
+                        <family>
+                            <ethernet-switching>
+                                <interface-mode>{{mode}}</interface-mode>
+                                {% if vlans %}
+                                <vlan>
+                                {% for vlan in vlans %}
+                                <members>{{vlan}}</members>
+                                {% endfor %}
+                                </vlan>
+                                {% endif %}
+                            </ethernet-switching>
+                        </family>
+                    </unit>
+                </interface>
+                <interface>
+                    <name>{{intf}}</name>
+                    <unit>
+                        <name>0</name>
+                        <family>
+                            <inet operation="remove"/>
+                        </family>
+                    </unit>
+                </interface>
+            </interfaces>
+    </configuration>
+  </config>

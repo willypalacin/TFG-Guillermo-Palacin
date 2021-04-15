@@ -79,7 +79,7 @@ def addOspf(device_name):
     msg, code = device.createOspf(args)
     return msg, code
 
-@app.route('/device/<string:device_name>/vlans',methods = ['PUT'])
+@app.route('/device/<string:device_name>/n2/vlans',methods = ['PUT'])
 def addVlans(device_name):
     args = json.loads(request.data)
     device = getDeviceByName(device_name)
@@ -92,6 +92,13 @@ def addVrrp(device_name):
     args = json.loads(request.data)
     device = getDeviceByName(device_name)
     msg, code = device.createVrrp(args)
+    return msg, code
+
+@app.route('/device/<string:device_name>/n2/lacp',methods = ['PUT'])
+def addPortChannel(device_name):
+    args = json.loads(request.data)
+    device = getDeviceByName(device_name)
+    msg, code = device.createPortChannel(args)
     return msg, code
 
 class DeviceAddHandler(Resource):

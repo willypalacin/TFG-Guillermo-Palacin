@@ -49,7 +49,7 @@ class JunosOSRouter(Device):
     def getInterfacesList(self):
         try:
             data = {'interfaces': []}
-            res = self.connection.command('show interfaces terse' , format='xml')
+            res = self.connection.command('show interfaces' , format='xml')
             #hola = ET.fromstring(res)
             data_xml = xmltodict.parse(str(res))
 
@@ -157,6 +157,21 @@ class JunosOSRouter(Device):
         except Exception as e:
          return "Necesitas configurar la interfaz primero para activar VRRP", 404
 
+    def createPortChannel(self, data):
+        try:
+            f = open('Templates/JunosOS/junos_port_channel.j2')
+            text = f.read()
+            template = jinja2.Template(text)
+            vlans = []
+            netconf_data = template.render(num_pc = data['numPortChannel'], mode=data['mode'], interfaces=data['interfaces'])
+            print(netconf_data)
+            netconf_reply = self.connection.edit_config(target='candidate', config=netconf_data)
+            self.connection.commit()
+            return "LACP configurado correctamente en {}".format(self.name), 201
+
+        except Exception as e:
+            return 'Las interfaces seleccionadas no son compatibles con LACP'
+
     def showInterfaces(self):
         try:
             rpc = self.pyez.rpc.get_interface_information(terse=True, normalize=True)
@@ -238,6 +253,7 @@ class JunosOSRouter(Device):
             return showOspfNeigh
         except:
             return []
+
 
     def showVlan(self):
         try:

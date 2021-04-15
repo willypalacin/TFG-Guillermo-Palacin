@@ -130,6 +130,19 @@ class AristaSwitch(Device):
         except Exception as e:
             return '{}'.format(e), 404
 
+    def createPortChannel(self, data):
+        try:
+            commands = ['enable', 'configure']
+            commands.append('interface port-channel {}'.format(data['numPortChannel'], 'exit'))
+            for intf in data['interfaces']:
+                commands.append("interface {}".format(intf))
+                commands.append("channel-group {} mode {}".format(data['numPortChannel'], data['mode']))
+                commands.append("exit")
+            createPortChannel = self.connection.run_commands(commands)
+            return "LACP configurado correctamente en {}".format(self.name), 201
+        except Exception as e:
+            return '{}'.format(e), 404
+
 
 
     def createVrrp(self, data):

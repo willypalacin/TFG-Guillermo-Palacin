@@ -1,0 +1,33 @@
+<config>
+  <configuration>
+           <interfaces>
+               <interface>
+                   <name>ae{{num_pc}}</name>
+                   <vlan-tagging/>
+                   {% if mode != '' %}
+                   <aggregated-ether-options>
+                       <lacp>
+                           <{{mode}}/>
+                           <periodic>fast</periodic>
+                       </lacp>
+                   </aggregated-ether-options>
+                   {% endif %}
+               </interface>
+           </interfaces>
+           <interfaces>
+            {% for intf in interfaces %}
+               <interface>
+                   <name>{{intf}}</name>
+                   <ether-options>
+                       <ieee-802.3ad>
+                           <bundle>ae{{num_pc}}</bundle>
+                       </ieee-802.3ad>
+                   </ether-options>
+                   <unit inactive="inactive">
+                       <name>0</name>
+                   </unit>
+               </interface>
+              {% endfor %}
+           </interfaces>
+   </configuration>
+</config>
