@@ -18,7 +18,7 @@ interfaces=[]
 data = dev.rpc.get_config(options={'format':'json'})
 for intf in data['configuration']['interfaces']['interface']:
     print(intf)
-    if ":" not in intf['name']:
+    if ":" not in intf['name'] and int['name'] not in :
         interface ='{}'.format(intf['name'])
         interfaces.append(interface)
     #print(data['configuration']['interfaces'][intf])

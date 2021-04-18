@@ -9,6 +9,8 @@ from Vista.MostrarConfigView import MostrarConfigView
 from Vista.DeviceShowsView import DeviceShowsView
 from Vista.DeviceConfigVlansView import DeviceConfigVlansView
 from Vista.DeviceConfigPortChannelView import DeviceConfigPortChannelView
+from Vista.DeviceConfigAclView import DeviceConfigAclView
+
 import requests, json
 import yaml
 from Modelo.Device import Device
@@ -111,6 +113,9 @@ class MainViewController:
         interfaces = self.getInterfacesList(name)
         DeviceConfigPortChannelView(window, self, name,interfaces['interfaces'], "blablabla\nblabla")
 
+    def clickedDeviceAcl(self, window, name):
+        interfaces = self.getInterfacesList(name)
+        DeviceConfigAclView(window,self, name, interfaces['interfaces'], ["BlaBlaBla"])
 
     def clickedDeviceHA(self, window, name):
         interfaces = self.getInterfacesList(name)
@@ -156,6 +161,14 @@ class MainViewController:
 
     def createPortChannel(self ,window, data, name):
         response = requests.put(BASE + "device/{}/n2/lacp".format(name), json.dumps(data))
+        if response.status_code == 201:
+            self.mainView.addMessageToConsole(response.content, "Green")
+            window.destroy()
+        else:
+            self.mainView.addMessageToConsole(response.content, "Red")
+
+    def createAcl(self ,window, data, name):
+        response = requests.put(BASE + "device/{}/acl".format(name), json.dumps(data))
         if response.status_code == 201:
             self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()

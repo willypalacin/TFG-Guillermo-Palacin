@@ -1,0 +1,53 @@
+{
+    "Cisco-IOS-XE-native:access-list": {
+    {% if tipo_acl == "standard"%}
+        "Cisco-IOS-XE-acl:standard": [
+            {
+                "name": "{{nombre_acl}}",
+                "access-list-seq-rule": [
+                    {
+                        "sequence": "{{num}}",
+                        "{{action}}": {
+                            "std-ace": {
+                                "ipv4-prefix": "{{sa}}",
+                                "mask": "{{wildcard_sa}}"
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+      {% endif %}
+      {% if tipo_acl == "extended"%}
+        "Cisco-IOS-XE-acl:extended": [
+            {
+                "name": "{{nombre_acl}}",
+                "access-list-seq-rule": [
+                    {
+                        "sequence": "{{num}}",
+                        "ace-rule": {
+                            "action": "{{action}}",
+                            {% if protocol != ''%}
+                            "protocol": "{{protocol}}",
+                            {% endif %}
+                            {% if sa != '' %}
+                            "ipv4-address": "1.1.1.0",
+                            "mask": "0.0.0.255",
+                            {% endif %}
+                            {% if da != '' %}
+                            "dest-ipv4-address": "3.3.3.0",
+                            "dest-mask": "0.0.0.255",
+                            {% endif %}
+                            {% if dest_port != '' %}
+                            "dst-eq": 339
+                            {% else %}
+                            "dst-eq": 65555
+                            {% endif %}
+                        }
+                    }
+                ]
+            }
+        ]
+        {% endif %}
+    }
+}

@@ -69,7 +69,7 @@ class DeviceConfigPortChannelView(tk.Toplevel):
                 , relwidth=0.172)
         pc2Combo.configure(takefocus="", values=self.interfaces, state='readonly', font="-family {Andale Mono} -size 11")
         pc2Combo.current(0)
-        self.combos.append(pc2Combo)
+
 
 
         chk3But = Checkbutton(self, var=self.chk[2], offvalue= 0, onvalue=1)
@@ -90,6 +90,7 @@ class DeviceConfigPortChannelView(tk.Toplevel):
         pc3Combo.configure(takefocus="", values=self.interfaces, state='readonly', font="-family {Andale Mono} -size 11")
         pc3Combo.current(0)
         self.combos.append(pc3Combo)
+        self.combos.append(pc2Combo)
 
         pc4Combo = ttk.Combobox(self)
         pc4Combo.place(relx=0.338, rely=0.489, relheight=0.047

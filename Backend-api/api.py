@@ -79,6 +79,13 @@ def addOspf(device_name):
     msg, code = device.createOspf(args)
     return msg, code
 
+@app.route('/device/<string:device_name>/acl',methods = ['PUT'])
+def addAcl(device_name):
+    args = json.loads(request.data)
+    device = getDeviceByName(device_name)
+    msg, code = device.createAcl(args)
+    return msg, code
+
 @app.route('/device/<string:device_name>/n2/vlans',methods = ['PUT'])
 def addVlans(device_name):
     args = json.loads(request.data)

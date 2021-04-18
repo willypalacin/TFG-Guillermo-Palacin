@@ -1,0 +1,61 @@
+<config>
+ <configuration>
+      {% if num != ''%}
+            <firewall>
+                <family>
+                    <inet>
+                        <filter>
+                            <name>{{nombre_acl}}</name>
+                            <term>
+                                <name>{{num}}</name>
+                                {% if sa != '' or da != ''%}
+                                <from>
+                                {% if sa != '' %}
+                                    <source-address>
+                                        <name>{{sa}}</name>
+                                    </source-address>
+                                {% endif %}
+                                {% if da != '' %}
+                                    <destination-address>
+                                        <name>{{da}}</name>
+                                    </destination-address>
+                                  {% endif %}
+                                    {% if protocol != '' %}
+                                    <protocol>{{protocol}}</protocol>
+                                    {% endif %}
+                                    {% if dest_port != '' %}
+                                    <destination-port>{{dest_port}}</destination-port>
+                                    {% endif %}
+                                </from>
+                                {% endif %}
+                                <then>
+                                    <{{action}}>
+                                    </{{action}}>
+                                </then>
+                            </term>
+                        </filter>
+                    </inet>
+                </family>
+            </firewall>
+          {% endif %}
+          {% if intf != '' %}
+            <interfaces>
+                <interface>
+                    <name>{{intf}}</name>
+                    <unit>
+                        <name>0</name>
+                        <family>
+                            <inet>
+                                <filter>
+                                    <{{inout}}>
+                                        <filter-name>{{nombre_acl}}</filter-name>
+                                    </{{inout}}>
+                                </filter>
+                            </inet>
+                        </family>
+                    </unit>
+                </interface>
+            </interfaces>
+            {% endif %}
+    </configuration>
+</config>

@@ -143,6 +143,39 @@ class AristaSwitch(Device):
         except Exception as e:
             return '{}'.format(e), 404
 
+    def createAcl(self, data):
+        commands = ["enable", "configure"]
+        print(data)
+        try:
+            inout = "in"
+            string = ""
+            for rule in data:
+                if data[rule]['rule']['num'] != '':
+                    if "accept" in data[rule]['rule']['action']:
+                        data[rule]['rule']['action']  = "permit"
+                    if "discard" in data[rule]['rule']['action']:
+                        data[rule]['rule']['action']  = "deny"
+                    if data[rule]['rule']['protocol'] == '':
+                        data[rule]['rule']['protocol'] = 'ip'
+                    if data[rule]['rule']['protocol'] == '' and data[rule]['rule']['destAddr'] == '' and data[rule]['rule']['destPort'] == '':
+                        commands.append("ip access-list standard {}".format(rule))
+                        commands.append('{} {} {}'.format(data[rule]['rule']['num'], data[rule]['rule']['action'], data[rule]['rule']['sourceAddr']))
+                    else:
+                        commands.append("ip access-list {}".format(rule))
+                        string = '{} {} {} {} {}'.format(data[rule]['rule']['num'], data[rule]['rule']['action'], data[rule]['rule']['protocol'],data[rule]['rule']['sourceAddr'], data[rule]['rule']['destAddr'])
+                        if "ip" not in  data[rule]['rule']['protocol']:
+                            string = string + " eq " +  data[rule]['rule']['destPort']
+                        commands.append(string)
+
+                if data[rule]['interfaz']['nombre'] != '':
+                    commands.append("interface {}".format(data[rule]['interfaz']['nombre']))
+                    if "output" in data[rule]['interfaz']['apply']:
+                        inout = "out"
+                    commands.append("ip access-group {} {}".format(rule, inout))
+                createAcl = self.connection.run_commands(commands)
+                return "ACL creada correctamente en {}".format(self.name), 201
+        except Exception as e:
+            return "Error al crear ACL en {}".format(self.name), 404
 
 
     def createVrrp(self, data):

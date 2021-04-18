@@ -172,6 +172,32 @@ class JunosOSRouter(Device):
         except Exception as e:
             return 'Las interfaces seleccionadas no son compatibles con LACP'
 
+    def createAcl(self, data):
+        try:
+            f = open('Templates/JunosOS/junos_acl.j2')
+            text = f.read()
+            template = jinja2.Template(text)
+            for rule in data:
+                netconf_data = template.render(nombre_acl = rule,
+                                               num=data[rule]['rule']['num'],
+                                               sa=data[rule]['rule']['sourceAddr'],
+                                               da=data[rule]['rule']['destAddr'],
+                                               protocol=data[rule]['rule']['protocol'],
+                                               action = data[rule]['rule']['action'],
+                                               dest_port=data[rule]['rule']['destPort'],
+                                               intf= data[rule]['interfaz']['nombre'],
+                                               inout=data[rule]['interfaz']['apply'])
+                netconf_reply = self.connection.edit_config(target='candidate', config=netconf_data)
+                self.connection.commit()
+                return "ACL creada correctamente en {}".format(self.name), 201
+
+        except Exception as e:
+            netconf_reply =  self.connection.rollback(rollback=0)
+            self.connection.commit()
+            return '{}'.format(e), 404
+
+
+
     def showInterfaces(self):
         try:
             rpc = self.pyez.rpc.get_interface_information(terse=True, normalize=True)

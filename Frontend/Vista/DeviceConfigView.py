@@ -26,20 +26,28 @@ class DeviceConfigView(tk.Toplevel):
         btnIntf.image=btnBlue
         btnIntf.pack(padx=10, pady=10)
 
-        btnRouting = tk.Button(leftFrame, text='Routing Estático \n y Dinámico',
+        btnRouting = tk.Button(leftFrame, text='Routing Dinámico',
                            image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDeviceRouting(self, self.name))
         btnRouting.image=btnBlue
         btnRouting.pack(padx=10, pady=10)
+
+        btnDhcp = tk.Button(leftFrame, text='Routing Estático',
+                           image=btnBlue, compound='center', fg="white")
+        btnDhcp.image=btnBlue
+        btnDhcp.pack(padx=70, pady=10)
 
         btnHA = tk.Button(leftFrame, text='High Availability',
                            image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDeviceHA(self, self.name))
         btnHA.image=btnBlue
         btnHA.pack(padx=10, pady=10)
 
-        btnDhcp = tk.Button(leftFrame, text='DHCP y ACLs',
-                           image=btnBlue, compound='center', fg="white")
+        btnDhcp = tk.Button(leftFrame, text='ACLs',
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDeviceAcl(self, self.name))
         btnDhcp.image=btnBlue
         btnDhcp.pack(padx=70, pady=(10,40))
+
+
+
 
         rightFrame = Frame(self, bg="white")
         rightFrame.pack(side=RIGHT)
