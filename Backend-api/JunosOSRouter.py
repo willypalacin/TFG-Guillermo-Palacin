@@ -155,7 +155,9 @@ class JunosOSRouter(Device):
                     return "VRRP configurado correctamente en {}".format(self.name), 201
 
         except Exception as e:
-         return "Necesitas configurar la interfaz primero para activar VRRP", 404
+            netconf_reply =  self.connection.rollback(rollback=0)
+            self.connection.commit()
+            return "Necesitas configurar la interfaz primero para activar VRRP", 404
 
     def createPortChannel(self, data):
         try:
@@ -297,4 +299,43 @@ class JunosOSRouter(Device):
                 showVlan.append(data)
             return showVlan
         except:
+            return []
+
+    def showOspfIntf(self):
+        try:
+            showOspfInt = []
+            rpc = self.pyez.rpc.get_ospf_interface_information({'format':'json'}, extensive=True)
+            for intf in rpc['ospf-interface-information'][0]['ospf-interface']:
+                data = {'interface': '',
+                        'area': '',
+                        'ip_address_mask': '',
+                        'cost': '',
+                        'state': '',
+                        'neighbors_fc': '0/0'}
+                data['interface'] = intf['interface-name'][0]['data']
+                data['area'] = intf['ospf-area'][0]['data']
+                data['state'] = intf['ospf-interface-state'][0]['data']
+                data['cost'] = intf['interface-cost'][0]['data']
+                data['ip_address_mask'] = intf['interface-address'][0]['data']
+                showOspfInt.append(data)
+            return showOspfInt
+        except:
+            return []
+
+    def showVrrp(self):
+        try:
+            showVrrp = []
+            rpc = self.pyez.rpc.get_vrrp_information({'format':'json'}, extensive=True)
+            for intf in rpc['vrrp-information'][0]['vrrp-interface']:
+                data = {
+                    'interface': intf['interface'][0]['data'],
+                    'group': intf['group'][0]['data'],
+                    'state': intf['vrrp-state'][0]['data'],
+                    'time': intf['advertisement-timer'][0]['data'],
+                    'master_ip': intf['master-router'][0]['data'],
+                    'group_ip': intf['preempt-hold'][0]['vip'][0]['data']
+                }
+                showVrrp.append(data)
+            return showVrrp
+        except Exception as e:
             return []

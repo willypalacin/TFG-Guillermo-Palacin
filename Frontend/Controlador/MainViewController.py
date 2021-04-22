@@ -80,6 +80,32 @@ class MainViewController:
         DeviceShowsView(window, self, json.loads(response.text),header, "Visualización VLANs", 4, 5)
         print(response.text)
 
+    def showOspfIntf(self, window):
+        header = {
+            'Interfaz': 'interface',
+            'Area': 'area',
+            'IP Interfaz': 'ip_address_mask',
+            'Coste': 'cost',
+            'State': 'state',
+        }
+        response = requests.get(BASE + "devices/show/ospf/interfaces")
+        DeviceShowsView(window, self, json.loads(response.text),header, "Visualizacion \n Interfaces OSPF", 4, 5)
+        print(response.text)
+
+    def showVrrp(self, window):
+        header = {
+            'Interfaz': 'interface',
+            'Grupo': 'group',
+            'Estado': 'state',
+            'Tiempo': 'time',
+            'Master_IP': 'master_ip',
+            'IP Grupo': 'group_ip'
+        }
+        response = requests.get(BASE + "devices/show/vrrp")
+        DeviceShowsView(window, self, json.loads(response.text),header, "Visualizacion \n VRRP", 4, 5)
+        print(response.text)
+
+
 
     def clickedDeviceVlans(self, window,name):
         DeviceConfigVlansView(window,self, name, "blabla\nblabla")
@@ -119,7 +145,8 @@ class MainViewController:
 
     def clickedDeviceHA(self, window, name):
         interfaces = self.getInterfacesList(name)
-        DeviceConfigHAView(window, self, name, interfaces['interfaces'], "blabla \n bla \n bla")
+        response = requests.get(BASE + "device/{}/protocols/vrrp".format(name))
+        DeviceConfigHAView(window, self, name, interfaces['interfaces'], response.content)
 
     def createInterface(self, window, name, data):
         response = requests.put(BASE + "device/{}/interfaces/interface".format(name), json.dumps(data))
@@ -134,6 +161,13 @@ class MainViewController:
     def getOspfData(self, name):
         response = requests.get(BASE + "device/{}/protocols/ospf".format(name))
         return response.content
+
+    def getSyncDevices(self, url):
+        BASE = url
+        response = requests.get(BASE + "devices/names")
+        print(response.content)
+        return json.loads(response.content)
+
 
     def createRouting(self ,window, data, name):
         response = requests.put(BASE + "device/{}/protocols/ospf".format(name), json.dumps(data))

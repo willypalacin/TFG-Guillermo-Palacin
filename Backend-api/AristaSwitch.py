@@ -22,7 +22,6 @@ class AristaSwitch(Device):
                 port=443,
                 timeout=2
             )
-
             eapi = pyeapi.client.Node(eapi_param)
             self.connection = eapi
             return 201, "Dispositivo {} anadido satisfactoriamente".format(self.name)
@@ -62,8 +61,6 @@ class AristaSwitch(Device):
         data = {'ospf': {'routerId': 'No configurado', 'processId': 'No configurado', 'interfaces': {}}}
         try:
             response = self.connection.run_commands('show ip ospf')
-            print("RESPONSEEEE")
-            print(response)
             if response[0]['vrfs'] != {}:
                 data['ospf']['processId'] = str((list(response[0]['vrfs']['default']['instList'].keys())[0]))
                 data['ospf']['routerId']= response[0]['vrfs']['default']['instList'][data['ospf']['processId']]['routerId']
@@ -93,7 +90,6 @@ class AristaSwitch(Device):
         try:
             response = self.connection.run_commands('show ip ospf')
             if response[0]['vrfs'] != {}:
-                print("ENTRA")
                 pid= int(list(response[0]['vrfs']['default']['instList'].keys())[0])
                 self.connection.run_commands(['enable', 'configure', 'no router ospf {}'.format(pid)])
 
@@ -276,4 +272,41 @@ class AristaSwitch(Device):
                 showVlan.append(data)
             return showVlan
         except Exception as e:
+            return []
+
+    def showOspfIntf(self):
+        try:
+            showOspfRun = self.connection.run_commands(['enable', 'show ip ospf interface brief'])[1]
+            showOspf= []
+            for instance in showOspfRun['vrfs']['default']['instList']:
+                for intf in showOspfRun['vrfs']['default']['instList'][instance]['interfaces']:
+                    data = {
+                            'interface': intf,
+                            'area': showOspfRun['vrfs']['default']['instList'][instance]['interfaces'][intf]['area'],
+                            'ip_address_mask': showOspfRun['vrfs']['default']['instList'][instance]['interfaces'][intf]['interfaceAddress'],
+                            'cost': showOspfRun['vrfs']['default']['instList'][instance]['interfaces'][intf]['cost'],
+                            'state': showOspfRun['vrfs']['default']['instList'][instance]['interfaces'][intf]['state'],
+                            'neighbors_fc': '0/0'
+                    }
+                    showOspf.append(data)
+            return showOspf
+        except Exception as e:
+            return []
+
+    def showVrrp(self):
+        try:
+            showVrrpRun = self.connection.run_commands(['enable', 'show vrrp'])[1]
+            showVrrp= []
+            for vr in showVrrpRun['virtualRouters']:
+                data = {
+                    'interface': vr['interface'],
+                    'group': vr['groupId'],
+                    'state': vr['state'],
+                    'time': vr['skewTime'],
+                    'master_ip': vr['masterAddr'],
+                    'group_ip': vr['virtualIp']
+                }
+                showVrrp.append(data)
+            return showVrrp
+        except:
             return []

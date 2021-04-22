@@ -116,6 +116,7 @@ class IOSRouter(Device):
                     rid.append(dataResponse['Cisco-IOS-XE-ospf:router-ospf']['ospf']['process-id'][process]['router-id'])
             data['ospf']['routerId'] = str(rid).strip("[]''")
             data['ospf']['processId'] = str(pid).strip("[]")
+
             return yaml.dump(data, default_flow_style=False), 201
                     #data['ospf']['routerId']= response[0]['vrfs']['default']['instList'][str(pid)]
         except Exception as e:
@@ -291,5 +292,36 @@ class IOSRouter(Device):
             vlanShow = self.c_netmiko.send_command('show vlan')
             vlanShowParsed = parse_output(platform="cisco_ios", command="show vlan", data=vlanShow)
             return showVlanParsed
+        except:
+            return []
+
+    def showOspfIntf(self):
+        try:
+            showOspfInt = self.c_netmiko.send_command('show ip ospf interface brief')
+            showOspfIntParsed = parse_output(platform="cisco_ios", command="show ip ospf interface brief", data=showOspfInt)
+            return showOspfIntParsed
+        except:
+            return []
+
+    def showVrrp(self):
+        try:
+            vrrpData = self.c_netmiko.send_command('show vrrp brief').split("\n")
+            showVrrp = []
+            i = 0
+            for vrrp in vrrpData:
+                if i != 0:
+                    line = re.split("\\s+", vrrp)
+                    data = {
+                        'interface': line[0],
+                        'group': line[1],
+                        'state': line [5],
+                        'time': line[3],
+                        'master_ip': line[6],
+                        'group_ip': line[7]
+                    }
+                    showVrrp.append(data)
+                i = i + 1
+                print(showVrrp)
+            return showVrrp
         except:
             return []

@@ -33,10 +33,15 @@ class MostrarConfigView(tk.Toplevel):
         btnHA.image=btnBlue
         btnHA.pack(padx=10, pady=10)
 
-        btnDhcp = tk.Button(leftFrame, text='DHCP y ACLs',
-                           image=btnBlue, compound='center', fg="white")
+        btnDhcp = tk.Button(leftFrame, text='Ver interfaces OSPF',
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.showOspfIntfClick())
         btnDhcp.image=btnBlue
         btnDhcp.pack(padx=70, pady=(10,40))
+
+        btnVrrp = tk.Button(leftFrame, text='Ver VRRP',
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.showVrrpClick())
+        btnVrrp.image=btnBlue
+        btnVrrp.pack(padx=70, pady=(10,40))
 
         rightFrame = Frame(self, bg="white")
         rightFrame.pack(side=RIGHT)
@@ -69,3 +74,9 @@ class MostrarConfigView(tk.Toplevel):
 
     def showVlansClick(self):
         self.controller.showVlan(self)
+
+    def showOspfIntfClick(self):
+        self.controller.showOspfIntf(self)
+
+    def showVrrpClick(self):
+        self.controller.showVrrp(self)

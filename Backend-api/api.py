@@ -4,6 +4,7 @@ from IOSRouter import IOSRouter
 from AristaSwitch import AristaSwitch
 from JunosOSRouter import JunosOSRouter
 import json
+import yaml
 
 app = Flask(__name__)
 api = Api(app)
@@ -66,11 +67,43 @@ def getShowOspfNeigh():
         print (data)
     return data, 201
 
+@app.route('/devices/show/ospf/interfaces',methods = ['GET'])
+def getShowOspfIntf():
+    data = {}
+    for device in devices:
+        data[device.getName()] = device.showOspfIntf()
+    return data, 201
+
+@app.route('/devices/show/vrrp',methods = ['GET'])
+def getShowVrrp():
+    data = {}
+    for device in devices:
+        data[device.getName()] = device.showVrrp()
+    return data, 201
+
+@app.route('/devices/names',methods = ['GET'])
+def getDevices():
+    devs = {}
+    for device in devices:
+        devs[device.getName()] = "up"
+    return devs, 201
+
 @app.route('/device/<string:device_name>/protocols/ospf',methods = ['GET'])
 def getOspfData(device_name):
     device = getDeviceByName(device_name)
     data, code = device.getOspfData()
     return data, code
+
+@app.route('/device/<string:device_name>/protocols/vrrp',methods = ['GET'])
+def getVrrpData(device_name):
+    device = getDeviceByName(device_name)
+    data = device.showVrrp()
+    if data != []:
+        code = 201
+    else:
+        code = 404
+        data = {'vrrp': 'No Configurado'}
+    return yaml.dump(data, default_flow_style=False), code
 
 @app.route('/device/<string:device_name>/protocols/ospf',methods = ['PUT'])
 def addOspf(device_name):

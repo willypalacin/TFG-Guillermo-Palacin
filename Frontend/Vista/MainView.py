@@ -21,8 +21,9 @@ class MainView(tk.Tk):
         #self.resizable(width=False, height=False)
         self.update()
 
-        btnAddImg = PhotoImage(file = 'Vista/assets/btn_anadir.png')
-        btnRemImg = PhotoImage(file = 'Vista/assets/btn_eliminar.png')
+        btnAddImg = PhotoImage(file = 'Vista/assets/btn_router.png')
+        btnRemImg = PhotoImage(file = 'Vista/assets/btn_delete.png')
+        btnSyncImg = PhotoImage(file = 'Vista/assets/btn_sync.png')
         rightButtonsImg = PhotoImage(file = 'Vista/assets/right_buttons.png')
 
         leftFrame = Frame(self, background="#4F535A", pady=20)
@@ -30,13 +31,19 @@ class MainView(tk.Tk):
         topFrame = Frame(leftFrame,background='#4F535A',width=self.winfo_width()/1.5)
         topFrame.pack(side=TOP, expand=1, fill=X, padx=39)
 
-        addDeviceBtn = Button(topFrame, height=26, width=26, borderwidth=0,command=lambda:self.mainViewController.clickedAddDevice(self), image=btnAddImg, padx=0,pady=0)
+        addDeviceBtn = Button(topFrame, height=58, width=58, borderwidth=0,command=lambda:self.mainViewController.clickedAddDevice(self), image=btnAddImg, padx=0,pady=0)
         addDeviceBtn.pack(side=LEFT)
         addDeviceBtn.image = btnAddImg
 
-        removeDeviceBtn = Button(topFrame, height=26, width=26, borderwidth=0,command=self.mostrarConfig, image=btnRemImg, padx=0,pady=0)
-        removeDeviceBtn.pack(side=LEFT, padx= 20)
+        syncDeviceBtn = Button(topFrame, height=58, width=58, borderwidth=0,command=self.syncButton, image=btnSyncImg, padx=0,pady=0)
+        syncDeviceBtn.pack(side=LEFT, padx= 20)
+        syncDeviceBtn.image = btnSyncImg
+
+        removeDeviceBtn = Button(topFrame, height=58, width=58, borderwidth=0,command=self.mostrarConfig, image=btnRemImg, padx=0,pady=0)
+        removeDeviceBtn.pack(side=LEFT, padx=0 )
         removeDeviceBtn.image = btnRemImg
+
+
 
         mainFrame = Frame(leftFrame, background='white', highlightcolor="black", width=int(self.winfo_width()/1.5), height=int(self.winfo_height()/1.3))
         mainFrame.pack(expand=1, fill=BOTH, padx=40, pady=30)
@@ -95,6 +102,50 @@ class MainView(tk.Tk):
 
     def mostrarConfig(self):
         self.mainViewController.clickedMostrarConfiguracion(self)
+
+    def syncButton(self):
+         imgBtnAccept = PhotoImage(file = 'Vista/assets/btn_accept_config.png')
+         imgBtnCancel = PhotoImage(file = 'Vista/assets/btn_cancel_config.png')
+         top = Toplevel(self)
+         top.geometry("400x190")
+         top.resizable(width=False, height=False)
+         titLabel = Label(top)
+         titLabel.pack(side=TOP, pady=15)
+         titLabel.configure(font="-family {Andale Mono} -size 18", text="Sincronizar dispositivos")
+
+         ipBackendLabel = Label(top)
+         ipBackendLabel.pack(pady=10)
+         ipBackendLabel.configure(font="-family {Andale Mono} -size 12", text="Introducir IP:puerto Backend")
+
+         self.ipEntry = Entry(top)
+         self.ipEntry.pack(pady=5)
+         self.ipEntry.configure(background="#ABE0FF")
+         self.ipEntry.insert(END, 'http://127.0.0.1:5000/')
+
+         frame = Frame(top)
+         frame.pack(side=BOTTOM, pady=(0,10))
+
+
+         btnAccept = tk.Button(frame,
+                     text='Accept',
+                     image=imgBtnAccept, compound='center',
+                     fg="white", font=("Andale Mono", 10),
+                     command=lambda:self.syncClick())
+         btnAccept.pack(side=LEFT, padx=(50, 40))
+         btnAccept.image = imgBtnAccept
+
+         btnCancel = tk.Button(frame, text='Cancel',
+                            image=imgBtnCancel,font=("Andale Mono", 10) ,
+                            compound='center', fg="white", command=lambda: self.destroy())
+         btnCancel.image = imgBtnCancel
+         btnCancel.pack(side=RIGHT, padx=(10, 50))
+
+    def syncClick(self):
+        devices = self.mainViewController.getSyncDevices(self.ipEntry.get())
+        for dev in devices:
+            self.paintDevice(dev)
+
+
 
 
 

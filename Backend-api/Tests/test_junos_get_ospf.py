@@ -33,7 +33,7 @@ dict =  xmltodict.parse(str(nc_get_reply))
 if 'router-id' in dict['rpc-reply']['data']['configuration']['routing-options']:
     data['ospf']['routerId'] = dict['rpc-reply']['data']['configuration']['routing-options']['router-id']
     data['ospf']['processId'] = '0'
-    for intf in dict['rpc-reply']['data']['configuration']['protocols']['ospf']['area']:
+for intf in dict['rpc-reply']['data']['configuration']['protocols']['ospf']['area']:
         data['ospf']['interfaces'].update({intf['interface']['name']: {}})
         intName = intf['interface']['name']
         data['ospf']['interfaces'][intName]['area'] = intf['name'].split('.')[3]
