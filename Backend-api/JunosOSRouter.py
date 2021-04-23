@@ -55,7 +55,7 @@ class JunosOSRouter(Device):
 
             for key in data_xml['rpc-reply']['interface-information']['physical-interface']:
                 data['interfaces'].append(key['name'])
-
+            print(data_xml)
             return json.dumps(data), 201
         except:
             return {}, 404
@@ -63,31 +63,17 @@ class JunosOSRouter(Device):
 
     def getOspfData(self):
         data = {'ospf': {'routerId': 'No configurado', 'processId': 'No configurado', 'interfaces': {}}}
-        get_filter = """
-            <configuration>
-                <routing-options>
-                </routing-options>
-                <protocols>
-                    <ospf>
-                    </ospf>
-                </protocols>
-            </configuration>
-        """
         try:
-            nc_get_reply = self.connection.get(('subtree', get_filter))
-            print (nc_get_reply)
-            dict =  xmltodict.parse(str(nc_get_reply))
-            if 'router-id' in dict['rpc-reply']['data']['configuration']['routing-options']:
-                data['ospf']['routerId'] = dict['rpc-reply']['data']['configuration']['routing-options']['router-id']
-                data['ospf']['processId'] = '0'
-                for intf in dict['rpc-reply']['data']['configuration']['protocols']['ospf']['area']:
-                    data['ospf']['interfaces'].update({intf['interface']['name']: {}})
-                    intName = intf['interface']['name']
-                    data['ospf']['interfaces'][intName]['area'] = intf['name'].split('.')[3]
-                    data['ospf']['interfaces'][intName]['helloTimer'] =intf['interface']['hello-interval']
-                    data['ospf']['interfaces'][intName]['coste'] = intf['interface']['metric']
-                    data['ospf']['interfaces'][intName]['deadTimer'] = intf['interface']['dead-interval']
-                    data['ospf']['interfaces'][intName]['priority'] = intf['interface']['priority']
+            rpc = self.pyez.rpc.get_ospf_interface_information({'format':'json'}, extensive=True)
+            for intf in rpc['ospf-interface-information'][0]['ospf-interface']:
+                intName = intf['interface-name'][0]['data']
+                data['ospf']['interfaces'].update({intName:{}})
+                data['ospf']['interfaces'][intName]['area'] = intf['ospf-area'][0]['data']
+                data['ospf']['interfaces'][intName]['priority'] = intf['router-priority'][0]['data']
+                data['ospf']['interfaces'][intName]['coste'] = intf['interface-cost'][0]['data']
+                data['ospf']['interfaces'][intName]['ip'] = intf['interface-address'][0]['data']
+                data['ospf']['interfaces'][intName]['helloTimer'] = intf['hello-interval'][0]['data']
+                data['ospf']['interfaces'][intName]['deadTimer'] = intf['dead-interval'][0]['data']
 
             return yaml.dump(data, default_flow_style=False), 201
         except Exception as e:
@@ -120,6 +106,8 @@ class JunosOSRouter(Device):
             self.connection.commit()
             return 'OSPF Configurado correctamente en {}'.format(self.name), 201
         except Exception as e:
+            netconf_reply =  self.connection.rollback(rollback=0)
+            self.connection.commit()
             return '{}'.format(e), 404
 
     def createVrrp(self, data):

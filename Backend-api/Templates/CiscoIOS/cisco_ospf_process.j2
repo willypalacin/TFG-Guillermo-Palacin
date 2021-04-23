@@ -1,6 +1,10 @@
+{% if pid != '' %}
 {
   "Cisco-IOS-XE-ospf:process-id": {
     "id": {{pid}},
+    {% if rid != '' %}
     "router-id": "{{rid}}"
+    {% endif %}
   }
 }
+{% endif %}

@@ -22,7 +22,7 @@ class IOSRouter(Device):
         self.c_netmiko = ConnectHandler(host = self.ip, username=self.username,
                                          password=self.password,
                                          device_type = 'cisco_ios',
-                                         port=22)
+                                         port=22, timeout=5)
 
     def createLoopbackTesting(self, int_name, name, ip, mask):
         self.connection.enable()
@@ -130,32 +130,40 @@ class IOSRouter(Device):
             if data['ospf']['processId']:
                 text = f2.read()
                 template = jinja2.Template(text)
-                config = template.render(pid= int(data['ospf']["processId"]),
+                config = template.render(pid= data['ospf']["processId"],
                                         rid = data['ospf']["routerId"])
-                response = requests.put(self.baseUrl + 'Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id={}'.format(data['ospf']['processId']),
+                response = requests.patch(self.baseUrl + 'Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id={}'.format(data['ospf']['processId']),
                                         auth=self.auth,
                                         headers=self.connection,
                                         data = config, verify=False)
             for intf in data['ospf']['interfaces']:
                 if data['ospf']['interfaces'][intf]:
                     match = re.match(r"([a-z]+)([0-9]+)", intf, re.I)
+                    if data['ospf']['interfaces'][intf]['helloTimer'] == '':
+                        data['ospf']['interfaces'][intf]['helloTimer'] = '10'
+                    if data['ospf']['interfaces'][intf]['deadTimer'] == '':
+                        data['ospf']['interfaces'][intf]['deadTimer'] = '40'
                     if match:
+
                         items = match.groups()
                         text = f1.read()
                         template = jinja2.Template(text)
-                        config = template.render(pid= int(data['ospf']["processId"]),
-                                                 int_name=items[0], int_num=items[1],
+                        config = template.render(pid= data['ospf']["processId"],
                                                  hello = data['ospf']['interfaces'][intf]['helloTimer'],
                                                  dead = data['ospf']['interfaces'][intf]['deadTimer'],
                                                  priority = data['ospf']['interfaces'][intf]['priority'],
-                                                 cost = int(data['ospf']['interfaces'][intf]['coste']),
+                                                 cost = data['ospf']['interfaces'][intf]['coste'],
                                                  area =  data['ospf']['interfaces'][intf]['area'])
-                        requests.delete(self.baseUrl + 'Cisco-IOS-XE-native:native/interface/{}={}/ip/router-ospf'.format(items[0], items[1]), auth=self.auth,headers=self.connection, verify=False)
+                        try:
+                            requests.delete(self.baseUrl + 'Cisco-IOS-XE-native:native/interface/{}={}/ip/Cisco-IOS-XE-ospf:router-ospf'.format(items[0], items[1]), auth=self.auth,headers=self.connection, verify=False)
+                        except:
+                            pass
 
-                        response = requests.put(self.baseUrl + 'Cisco-IOS-XE-native:native/interface/{}={}'.format(items[0], items[1]),
+                        response = requests.patch(self.baseUrl + 'Cisco-IOS-XE-native:native/interface/{}={}/ip/Cisco-IOS-XE-ospf:router-ospf'.format(items[0], items[1]),
                                                 auth=self.auth,
                                                 headers=self.connection,
                                                 data = config, verify=False)
+                        print(config)
                         print(response.text)
                         if("errors" not in response.text):
                             print(response.text)

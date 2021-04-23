@@ -1,19 +1,33 @@
 <config>
   <configuration>
+  {% if rid != '' %}
     <routing-options>
       <router-id>{{rid}}</router-id>
     </routing-options>
+  {% endif %}
     {% for intf in interfaces %}
-      <protocols>
+      <protocols operation="merge">
         <ospf>
         <area>
+        {% if interfaces[intf]['area'] != '' %}
           <name>{{ interfaces[intf]['area'] }}</name>
+        {% endif %}
           <interface>
+          {% if intf != '' %}
           <name>{{intf}}</name>
+          {% endif %}
+          {% if interfaces[intf]['coste'] != '' %}
           <metric>{{ interfaces[intf]['coste'] }}</metric>
+          {% endif %}
+          {% if interfaces[intf]['priority'] != '' %}
           <priority>{{interfaces[intf]['priority']}}</priority>
+          {% endif %}
+          {% if interfaces[intf]['helloTimer'] != '' %}
           <hello-interval>{{interfaces[intf]['helloTimer']}}</hello-interval>
+          {% endif %}
+          {% if interfaces[intf]['deadTimer'] != '' %}
           <dead-interval>{{interfaces[intf]['deadTimer']}}</dead-interval>
+          {% endif %}
           </interface>
         </area>
       </ospf>
