@@ -49,7 +49,7 @@ class JunosOSRouter(Device):
     def getInterfacesList(self):
         try:
             data = {'interfaces': []}
-            res = self.connection.command('show interfaces' , format='xml')
+            res = self.connection.command('show interfaces' , format='xml') 
             #hola = ET.fromstring(res)
             data_xml = xmltodict.parse(str(res))
 
