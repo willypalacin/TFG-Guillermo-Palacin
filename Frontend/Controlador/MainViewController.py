@@ -210,24 +210,3 @@ class MainViewController:
             self.mainView.addMessageToConsole(response.content, "Red")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#data = [{"likes": 100, "name": "jose mari", "views": 1000}, {"likes": 98, "name": "Antonio", "views": 1000},{"likes": 75, "name": "Puri", "views": 1000},
-#{"likes": 2345, "name": "Jose", "views": 1000}]
