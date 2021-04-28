@@ -63,8 +63,8 @@ class DeviceConfigView(tk.Toplevel):
         btnAgg.image=btnBlue
         btnAgg.pack(padx=(30,70),pady=10)
 
-        btnSTP = tk.Button(rightFrame, text='Spanning-Tree',
-                           image=btnBlue, compound='center', fg="white")
+        btnSTP = tk.Button(rightFrame, text='Configuracion SwitchPort',
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDeviceSwitchPort(self, self.name))
         btnSTP.image=btnBlue
 
         btnSTP.pack(padx=(30,70),pady=10)

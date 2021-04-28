@@ -22,7 +22,7 @@ class IOSRouter(Device):
         self.c_netmiko = ConnectHandler(host = self.ip, username=self.username,
                                          password=self.password,
                                          device_type = 'cisco_ios',
-                                         port=22, timeout=5)
+                                         port=22, timeout=10)
 
     def createLoopbackTesting(self, int_name, name, ip, mask):
         self.connection.enable()
@@ -41,7 +41,7 @@ class IOSRouter(Device):
             response = requests.get(self.baseUrl + "Cisco-IOS-XE-native:native/hostname",
                                     auth=self.auth,
                                     headers=self.connection,
-                                    verify=True)
+                                    verify=False)
             self.c_netmiko.enable()
             return 201, "Dispositivo {} anadido satisfactoriamente".format(self.name)
         except:
@@ -64,7 +64,7 @@ class IOSRouter(Device):
                                  mask=mask, description=desc)
 
         response = requests.put(self.baseUrl + "ietf-interfaces:interfaces/interface={}".format(int_name),
-                                auth=self.auth ,headers=self.connection, data = config, verify=True)
+                                auth=self.auth ,headers=self.connection, data = config, verify=False)
         if response.text == '':
             print("si")
 
@@ -85,7 +85,7 @@ class IOSRouter(Device):
         data = {'ospf': {'routerId': 'No configurado', 'processId': 'No configurado', 'interfaces': {}}}
         try:
             response = requests.get(self.baseUrl + "Cisco-IOS-XE-native:native/interface" , auth=self.auth,
-                                        headers=self.connection, verify=True)
+                                        headers=self.connection, verify=False)
 
 
             dataResponse = json.loads(response.text)
@@ -95,20 +95,25 @@ class IOSRouter(Device):
 
             for intf in dataResponse['Cisco-IOS-XE-native:interface']:
                 for i in range(0,len(dataResponse['Cisco-IOS-XE-native:interface'][intf])):
-                    print(dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['ip'].keys())
-                    if 'Cisco-IOS-XE-ospf:router-ospf' in dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['ip'].keys():
-                        intName = '{}{}'.format(intf, dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['name'])
-                        data['ospf']['interfaces'].update({intName : {}})
-                        dataOspf=dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['ip']['Cisco-IOS-XE-ospf:router-ospf']['ospf']
-                        print(dataOspf)
-                        data['ospf']['interfaces'][intName]['area'] = dataOspf['process-id'][0]['area'][0]['area-id']
-                        data['ospf']['interfaces'][intName]['helloTimer'] = dataOspf['hello-interval']
-                        data['ospf']['interfaces'][intName]['coste'] = dataOspf['cost']
-                        data['ospf']['interfaces'][intName]['deadTimer'] = dataOspf['dead-interval']
-                        data['ospf']['interfaces'][intName]['priority'] = dataOspf['priority']
+                    if 'ip' in dataResponse['Cisco-IOS-XE-native:interface'][intf][i].keys():
+                        print(dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['ip'].keys())
+                        if 'Cisco-IOS-XE-ospf:router-ospf' in dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['ip'].keys():
+                            intName = '{}{}'.format(intf, dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['name'])
+                            data['ospf']['interfaces'].update({intName : {}})
+                            dataOspf=dataResponse['Cisco-IOS-XE-native:interface'][intf][i]['ip']['Cisco-IOS-XE-ospf:router-ospf']['ospf']
+                            print(dataOspf)
+                            data['ospf']['interfaces'][intName]['area'] = dataOspf['process-id'][0]['area'][0]['area-id']
+                            if "hello-interval" in dataOspf.keys():
+                                data['ospf']['interfaces'][intName]['helloTimer'] = dataOspf['hello-interval']
+                            if "cost" in dataOspf.keys():
+                                data['ospf']['interfaces'][intName]['coste'] = dataOspf['cost']
+                            if "dead-interval" in dataOspf.keys():
+                                data['ospf']['interfaces'][intName]['deadTimer'] = dataOspf['dead-interval']
+                            if "priority" in dataOspf.keys():
+                                data['ospf']['interfaces'][intName]['priority'] = dataOspf['priority']
 
             response = requests.get(self.baseUrl + "Cisco-IOS-XE-native:native/router/router-ospf" , auth=self.auth,
-                                        headers=self.connection, verify=True)
+                                        headers=self.connection, verify=False)
             dataResponse = json.loads(response.text)
             if 'ospf' in dataResponse['Cisco-IOS-XE-ospf:router-ospf'].keys():
                 for process in range(0,len(dataResponse['Cisco-IOS-XE-ospf:router-ospf']['ospf']['process-id'])):
@@ -130,12 +135,16 @@ class IOSRouter(Device):
             if data['ospf']['processId']:
                 text = f2.read()
                 template = jinja2.Template(text)
-                config = template.render(pid= data['ospf']["processId"],
+                config = template.render(pid= int(data['ospf']["processId"]),
                                         rid = data['ospf']["routerId"])
-                response = requests.patch(self.baseUrl + 'Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id={}'.format(data['ospf']['processId']),
-                                        auth=self.auth,
-                                        headers=self.connection,
-                                        data = config, verify=False)
+                try:
+                    response = requests.put(self.baseUrl + 'Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id={}'.format(data['ospf']['processId']),
+                                            auth=self.auth,
+                                            headers=self.connection,
+                                            data = config, verify=False)
+                except:
+                    return 'Ya existe un proceso con router-id {}'.format(data['ospf']["routerId"]), 404
+
             for intf in data['ospf']['interfaces']:
                 if data['ospf']['interfaces'][intf]:
                     match = re.match(r"([a-z]+)([0-9]+)", intf, re.I)
@@ -144,11 +153,10 @@ class IOSRouter(Device):
                     if data['ospf']['interfaces'][intf]['deadTimer'] == '':
                         data['ospf']['interfaces'][intf]['deadTimer'] = '40'
                     if match:
-
                         items = match.groups()
                         text = f1.read()
                         template = jinja2.Template(text)
-                        config = template.render(pid= data['ospf']["processId"],
+                        config = template.render(pid= int(data['ospf']["processId"]),
                                                  hello = data['ospf']['interfaces'][intf]['helloTimer'],
                                                  dead = data['ospf']['interfaces'][intf]['deadTimer'],
                                                  priority = data['ospf']['interfaces'][intf]['priority'],
@@ -159,7 +167,7 @@ class IOSRouter(Device):
                         except:
                             pass
 
-                        response = requests.patch(self.baseUrl + 'Cisco-IOS-XE-native:native/interface/{}={}/ip/Cisco-IOS-XE-ospf:router-ospf'.format(items[0], items[1]),
+                        response = requests.put(self.baseUrl + 'Cisco-IOS-XE-native:native/interface/{}={}/ip/Cisco-IOS-XE-ospf:router-ospf'.format(items[0], items[1]),
                                                 auth=self.auth,
                                                 headers=self.connection,
                                                 data = config, verify=False)

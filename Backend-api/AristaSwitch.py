@@ -139,6 +139,23 @@ class AristaSwitch(Device):
         except Exception as e:
             return '{}'.format(e), 404
 
+    def createSwitchPort(self, data):
+        try:
+            commands = ['enable', 'configure']
+            for intf in data:
+                commands.append("interface {}".format(intf))
+                commands.append("switchport")
+                commands.append("switchport mode {}".format(data[intf]['mode']))
+                if "access" in data[intf]['mode']:
+                    commands.append("switchport access vlan {} ".format(data[intf]['vlans']))
+                else:
+                    commands.append("switchport trunk allowed vlan {} ".format(data[intf]['vlans']))
+            createL2int = self.connection.run_commands(commands)
+            return "Enlace configurado correctamente", 201
+        except Exception as e:
+            return '{}'.format(e), 404
+
+
     def createAcl(self, data):
         commands = ["enable", "configure"]
         print(data)

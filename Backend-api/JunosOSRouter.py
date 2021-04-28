@@ -19,7 +19,7 @@ class JunosOSRouter(Device):
             connection = manager.connect(host=self.ip, port=int(self.port),
                                      username=self.username, password=self.password, hostkey_verify=False,
                                      device_params={'name': 'junos'}, allow_agent=False,
-                                     look_for_keys=False, timeout=3)
+                                     look_for_keys=False, timeout=10)
 
             self.connection = connection
             self.pyez = Dev(host=self.ip, user=self.username, passwd=self.password, port=int(self.port))
@@ -49,7 +49,7 @@ class JunosOSRouter(Device):
     def getInterfacesList(self):
         try:
             data = {'interfaces': []}
-            res = self.connection.command('show interfaces' , format='xml') 
+            res = self.connection.command('show interfaces' , format='xml')
             #hola = ET.fromstring(res)
             data_xml = xmltodict.parse(str(res))
 
@@ -92,7 +92,7 @@ class JunosOSRouter(Device):
             return "VLANs creadas correctamente en {}".format(self.name), 201
 
         except Exception as e:
-            return "Error al crear VLANs, no puede haber dos Vlans con el mismo prefijo de red", 404
+            return "{}".format(e), 404
 
 
     def createOspf(self, data):
@@ -160,7 +160,34 @@ class JunosOSRouter(Device):
             return "LACP configurado correctamente en {}".format(self.name), 201
 
         except Exception as e:
-            return 'Las interfaces seleccionadas no son compatibles con LACP'
+            return 'Las interfaces seleccionadas no son compatibles con LACP', 404
+
+    def createSwitchPort(self, data):
+        try:
+            f = open('Templates/JunosOS/junos_interfaz_n2.j2')
+            text = f.read()
+            template = jinja2.Template(text)
+            vlans = []
+            for intf in data:
+                if data[intf]['vlans'] != '':
+                    if "-" in data[intf]['vlans']:
+                        aux = data[intf]['vlans'].split("-")
+                        for i in range(int(aux[0]), int(aux[1])+1):
+                            vlans.append(i)
+                    else:
+                        if "," in data[intf]['vlans']:
+                            vlans = data[intf]['vlans'].split(",")
+                        else:
+                            if data[intf]['vlans'] != '':
+                                vlans.append(data[intf]['vlans'])
+                netconf_data = template.render(intf = intf, mode=data[intf]['mode'], vlans = vlans)
+                netconf_reply = self.connection.edit_config(target='candidate', config=netconf_data)
+            self.connection.commit()
+            return "Enlace creado correctamente", 201
+        except Exception as e:
+            netconf_reply =  self.connection.rollback(rollback=0)
+            self.connection.commit()
+            return "{}".format(e), 404
 
     def createAcl(self, data):
         try:

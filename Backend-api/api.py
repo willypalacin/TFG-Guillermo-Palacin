@@ -94,6 +94,12 @@ def getOspfData(device_name):
     data, code = device.getOspfData()
     return data, code
 
+@app.route('/device/<string:device_name>/switchport',methods = ['PUT'])
+def addSwitchPort(device_name):
+    device = getDeviceByName(device_name)
+    data, code = device.createSwitchPort(json.loads(request.data))
+    return data, code
+
 @app.route('/device/<string:device_name>/protocols/vrrp',methods = ['GET'])
 def getVrrpData(device_name):
     device = getDeviceByName(device_name)

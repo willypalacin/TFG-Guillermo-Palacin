@@ -145,17 +145,22 @@ class MainView(tk.Tk):
         for dev in devices:
             self.paintDevice(dev)
 
-
-
-
+    def drawLine(self,event):
+        x, y = event.x, event.y
+        if canvas.oldCoords:
+            x1, y1 = canvas.oldCoords
+            canvas.create_line(x, y, x1, y1)
+        canvas.oldCoords = x, y
 
     def paintDevice(self, name):
         myCanvas = Canvas(self.mainFrame, height=97, width=97, bg="white")
         myCanvas.place(x=50, y=50)
         circle = myCanvas.create_oval(3, 3,99,99 ,fill="#00A2FF",  outline='red')
         myCanvas.create_text(50,50,text=name, font=("Andale Mono", 16), fill="white")
+        myCanvas.old_coords = None
         myCanvas.bind('<B1-Motion>', lambda event: self.moveDevice(event, myCanvas, circle))
         myCanvas.bind('<Double-Button-1>', lambda event: self.mainViewController.clickedConfigurationDevice(self, event, name))
+        myCanvas.bind('<Motion>', lambda event: self.drawLine(event))
         self.devices.append(myCanvas)
         self.update()
         #devices.append(self.myCanvas)

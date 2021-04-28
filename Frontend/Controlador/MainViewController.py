@@ -10,7 +10,7 @@ from Vista.DeviceShowsView import DeviceShowsView
 from Vista.DeviceConfigVlansView import DeviceConfigVlansView
 from Vista.DeviceConfigPortChannelView import DeviceConfigPortChannelView
 from Vista.DeviceConfigAclView import DeviceConfigAclView
-
+from Vista.DeviceConfigSwitchPortView import DeviceConfigSwitchPortView
 import requests, json
 import yaml
 from Modelo.Device import Device
@@ -148,6 +148,10 @@ class MainViewController:
         response = requests.get(BASE + "device/{}/protocols/vrrp".format(name))
         DeviceConfigHAView(window, self, name, interfaces['interfaces'], response.content)
 
+    def clickedDeviceSwitchPort(self, window, name):
+        interfaces = self.getInterfacesList(name)
+        DeviceConfigSwitchPortView(window, self, name, interfaces['interfaces'])
+
     def createInterface(self, window, name, data):
         response = requests.put(BASE + "device/{}/interfaces/interface".format(name), json.dumps(data))
         if(response.status_code == 200):
@@ -209,4 +213,10 @@ class MainViewController:
         else:
             self.mainView.addMessageToConsole(response.content, "Red")
 
-
+    def createSwitchPort(self, window, data, name):
+        response = requests.put(BASE + "device/{}/switchport".format(name), json.dumps(data))
+        if response.status_code == 201:
+            self.mainView.addMessageToConsole(response.content, "Green")
+            window.destroy()
+        else:
+            self.mainView.addMessageToConsole(response.content, "Red")
