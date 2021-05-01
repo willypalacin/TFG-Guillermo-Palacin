@@ -1,0 +1,22 @@
+
+
+{
+    "Cisco-IOS-XE-native:ip-route-interface-forwarding-list": {
+        "prefix": "{{ip}}",
+        "mask": "{{mask}}",
+        "fwd-list": [
+            {
+                {% if gw != '' %}
+                "fwd": "{{gw}}",
+                {% else %}
+                "fwd": "{{intf}}",
+                {% endif%}
+                {% if metric != '' %}
+                "metric": {{metric}}
+                {% else %}
+                "metric": 1
+                {% endif %}
+            }
+        ]
+    }
+}

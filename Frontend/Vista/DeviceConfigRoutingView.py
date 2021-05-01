@@ -32,7 +32,7 @@ class DeviceConfigRoutingView(tk.Toplevel):
         self.image = imgLineaBg
 
         titulo = Label(self)
-        titulo.place(relx=0.4, rely=0.09, height=21, width=114)
+        titulo.place(relx=0.3, rely=0.09, height=21, width=200)
         titulo.configure(disabledforeground="#a3a3a3")
         titulo.configure(font="-family {Andale Mono} -size 19")
         titulo.configure(foreground="#000000")
@@ -49,21 +49,31 @@ class DeviceConfigRoutingView(tk.Toplevel):
         paramLabel.configure(text="Config Actual")
 
         ridLabel = Label(self)
-        ridLabel.place(relx=0.04, rely=0.345, relheight=0.05, relwidth=0.11)
+        ridLabel.place(relx=0.04, rely=0.3, relheight=0.05, relwidth=0.11)
         ridLabel.configure(text="Router ID",font="-family {Andale Mono} -size 10")
 
+        ridLabel = Label(self)
+        ridLabel.place(relx=0.04, rely=0.4, relheight=0.05, relwidth=0.25)
+        ridLabel.configure(text="default-info originate",font="-family {Andale Mono} -size 10")
+
         self.ridEntry = Entry(self)
-        self.ridEntry.place(relx=0.17, rely=0.34, relheight=0.05
+        self.ridEntry.place(relx=0.17, rely=0.3, relheight=0.05
                 , relwidth=0.12)
         self.ridEntry.configure(takefocus="", background="#ABE0FF")
         self.ridEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
 
         pidLabel = Label(self)
-        pidLabel.place(relx=0.3, rely=0.345, relheight=0.05, relwidth=0.11)
+        pidLabel.place(relx=0.3, rely=0.3, relheight=0.05, relwidth=0.11)
         pidLabel.configure(text="PID",font="-family {Andale Mono} -size 10")
+        self.chk_do = IntVar()
+        defaultCheck = Checkbutton(self, var=self.chk_do, offvalue= 0, onvalue=1)
+        defaultCheck.place(relx=0.32, rely=0.4, relwidth=0.150,  relheight=0.05)
+        defaultCheck.configure(takefocus="")
+        defaultCheck.configure(text="", font="-family {Andale Mono} -size 11")
+
 
         self.pidEntry = Entry(self)
-        self.pidEntry.place(relx=0.4, rely=0.34, relheight=0.05
+        self.pidEntry.place(relx=0.4, rely=0.3, relheight=0.05
                 , relwidth=0.05)
         self.pidEntry.configure(takefocus="", background="#ABE0FF")
         self.pidEntry.configure(cursor="ibeam", font="-family {Andale Mono} -size 10")
@@ -175,6 +185,7 @@ class DeviceConfigRoutingView(tk.Toplevel):
         self.data['ospf']['interfaces'].update({self.currentInterface: {}})
         self.data['ospf']['processId'] = self.pidEntry.get()
         self.data['ospf']['routerId'] = self.ridEntry.get()
+        self.data['ospf']['default-originate'] = self.chk_do.get()
         if self.chk.get():
             self.data['ospf']['interfaces'][self.currentInterface]['area'] = self.areaEntry.get()
             self.data['ospf']['interfaces'][self.currentInterface]['coste'] = self.costeEntry.get()
@@ -189,7 +200,6 @@ class DeviceConfigRoutingView(tk.Toplevel):
         self.currentInterface = self.interfacesCombo.get()
         if self.chk.get():
             self.data['ospf']['interfaces'].update({self.currentInterface: {}})
-
             self.data['ospf']['interfaces'][self.currentInterface]['area'] = self.areaEntry.get()
             self.data['ospf']['interfaces'][self.currentInterface]['coste'] = self.costeEntry.get()
             self.data['ospf']['interfaces'][self.currentInterface]['helloTimer'] = self.helloEntry.get()

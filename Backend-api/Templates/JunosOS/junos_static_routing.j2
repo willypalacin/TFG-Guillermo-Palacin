@@ -1,0 +1,15 @@
+<config>
+ <configuration>
+  <routing-options>
+    <static>
+        <route operation="replace">
+            <name>{{ip}}</name>
+            <next-hop>{{gw}}</next-hop>
+            <metric>
+              <metric-value>{{metric}}</metric-value>
+            </metric>
+          </route>
+        </static>
+  </routing-options>
+ </configuration>
+</config>

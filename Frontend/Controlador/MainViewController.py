@@ -11,6 +11,7 @@ from Vista.DeviceConfigVlansView import DeviceConfigVlansView
 from Vista.DeviceConfigPortChannelView import DeviceConfigPortChannelView
 from Vista.DeviceConfigAclView import DeviceConfigAclView
 from Vista.DeviceConfigSwitchPortView import DeviceConfigSwitchPortView
+from Vista.DeviceConfigStaticRoutingView import DeviceConfigStaticRoutingView
 import requests, json
 import yaml
 from Modelo.Device import Device
@@ -135,6 +136,10 @@ class MainViewController:
         dataOspf = self.getOspfData(name)
         DeviceConfigRoutingView(window, self, name, interfaces['interfaces'], dataOspf)
 
+    def clickedDeviceStaticRouting(self, window, name):
+        interfaces = self.getInterfacesList(name)
+        DeviceConfigStaticRoutingView(window, self, name, interfaces['interfaces'])
+
     def clickedDevicePortChannel(self, window, name):
         interfaces = self.getInterfacesList(name)
         DeviceConfigPortChannelView(window, self, name,interfaces['interfaces'], "blablabla\nblabla")
@@ -215,6 +220,14 @@ class MainViewController:
 
     def createSwitchPort(self, window, data, name):
         response = requests.put(BASE + "device/{}/switchport".format(name), json.dumps(data))
+        if response.status_code == 201:
+            self.mainView.addMessageToConsole(response.content, "Green")
+            window.destroy()
+        else:
+            self.mainView.addMessageToConsole(response.content, "Red")
+
+    def createStaticRouting(self, window, data, name):
+        response = requests.put(BASE + "device/{}/static".format(name), json.dumps(data))
         if response.status_code == 201:
             self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()

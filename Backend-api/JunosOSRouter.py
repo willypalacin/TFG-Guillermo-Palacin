@@ -94,6 +94,20 @@ class JunosOSRouter(Device):
         except Exception as e:
             return "{}".format(e), 404
 
+    def createStaticRouting(self, data):
+        try:
+            f = open('Templates/JunosOS/junos_static_routing.j2')
+            text = f.read()
+            template = jinja2.Template(text)
+            netconf_data = template.render(ip=data['red'], gw = data['gw'], metric=data['metric'])
+            netconf_reply = self.connection.edit_config(target='candidate', config=netconf_data)
+            self.connection.commit()
+            return "Ruta creada correctamente en {}".format(self.name), 201
+        except Exception as e:
+            self.connection.rollback(rollback=0)
+            self.connection.commit()
+            return "{}".format(e), 404
+
 
     def createOspf(self, data):
         try:

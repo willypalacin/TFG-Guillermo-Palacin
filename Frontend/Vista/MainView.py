@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import *
 
 
+
 class MainView(tk.Tk):
     def __init__(self, mainViewController):
         tk.Tk.__init__(self)
@@ -11,9 +12,10 @@ class MainView(tk.Tk):
         self.consoleView = None
         self.errorMessagesLabels = []
         self.mainFrame = self.paintMainWindow()
-        self.prueba = 1
-
-
+        self.clickLine = 0
+        self.mouseX = 0
+        self.mouseY = 0
+    
     def paintMainWindow(self):
         self.title("Network define")
         self.geometry("1700x1000")
@@ -25,6 +27,7 @@ class MainView(tk.Tk):
         btnRemImg = PhotoImage(file = 'Vista/assets/btn_delete.png')
         btnSyncImg = PhotoImage(file = 'Vista/assets/btn_sync.png')
         rightButtonsImg = PhotoImage(file = 'Vista/assets/right_buttons.png')
+
 
         leftFrame = Frame(self, background="#4F535A", pady=20)
         leftFrame.pack(side=LEFT)
@@ -45,8 +48,13 @@ class MainView(tk.Tk):
 
 
 
-        mainFrame = Frame(leftFrame, background='white', highlightcolor="black", width=int(self.winfo_width()/1.5), height=int(self.winfo_height()/1.3))
+        mainFrame = Canvas(leftFrame, background='white', highlightcolor="black", width=int(self.winfo_width()/1.5), height=int(self.winfo_height()/1.3))
         mainFrame.pack(expand=1, fill=BOTH, padx=40, pady=30)
+        m = Menu(self, tearoff = False)
+        m.add_command(label ="Añadir Linea", command = lambda: self.createLine())
+        m.add_command(label ="Añadir Texto")
+        m.add_separator()
+        mainFrame.bind('<Button-2>', lambda event: self.showMenu(event,m))
 
 
         rightFrame = Frame(self, background="#4F535A", width=int(self.winfo_width()/2.5))
@@ -55,17 +63,20 @@ class MainView(tk.Tk):
         butonOptionsFrame = Frame(rightFrame,background="#4F535A",height=int() ,width=int(self.winfo_width()/3.5),highlightbackground="white", highlightthickness=1)
         butonOptionsFrame.pack(side=TOP, fill=BOTH)
 
-        showConfigBtn = Button(butonOptionsFrame, text="Mostrar Configuración",borderwidth=0,command=self.mostrarConfig, image=rightButtonsImg,highlightthickness=0, bd = 0, fg="black", compound='center', font=("Helvetica", 15))
-        showConfigBtn.image = rightButtonsImg
+
+        showConfigBtn = Button(butonOptionsFrame,borderwidth=0 ,height=50, width=225,command=self.mostrarConfig, image=rightButtonsImg)
+        showConfigBtn["bg"] = "#4F535A"
+        showConfigBtn["border"] = "0"
         showConfigBtn.pack(pady=(40,20))
+        showConfigBtn.image = rightButtonsImg
+        label = Label(butonOptionsFrame, text="Mostrar Configuracion", bg="#F2F2F2")
+        label.place(relx=0.3, rely = 0.25)
 
-        showCurrentBtn = Button(butonOptionsFrame,text="Exportar Template" ,borderwidth=0,command=self.mostrarConfig, image=rightButtonsImg,highlightthickness=0, bd = 0, fg="black", compound='center', font=("Helvetica", 15))
-        showCurrentBtn.image = rightButtonsImg
-        showCurrentBtn.pack(pady=20)
-
-        showCurrentBtn = Button(butonOptionsFrame,text="Importar Configuracion" ,borderwidth=0,command=self.mostrarConfig, image=rightButtonsImg,highlightthickness=0, bd = 0, fg="black", compound='center', font=("Helvetica", 15))
-        showCurrentBtn.image = rightButtonsImg
+        showCurrentBtn = Button(butonOptionsFrame, height=50, width=225, image=rightButtonsImg)
         showCurrentBtn.pack(pady=(20,40))
+        showCurrentBtn["bg"] = "#4F535A"
+        showCurrentBtn["border"] = "0"
+        showCurrentBtn.image = rightButtonsImg
 
         self.consoleView = Frame(rightFrame,background="black",width=int(self.winfo_width()/3.5),height=int(self.winfo_height()/2.7),highlightbackground="white", highlightthickness=1)
 
@@ -145,22 +156,44 @@ class MainView(tk.Tk):
         for dev in devices:
             self.paintDevice(dev)
 
-    def drawLine(self,event):
-        x, y = event.x, event.y
-        if canvas.oldCoords:
-            x1, y1 = canvas.oldCoords
-            canvas.create_line(x, y, x1, y1)
-        canvas.oldCoords = x, y
+
+    def showMenu(self,event, m):
+        try:
+            m.tk_popup(event.x_root, event.y_root)
+            self.mouseX = event.x_root
+            self.mouseY = event.y_root
+        finally:
+            m.grab_release()
+
+    def createLine(self):
+        global x1, y1
+        global numLin
+        if self.clickLine == 0:
+            print("entra")
+            x1 = self.mouseX
+            y1 = self.mouseY
+            self.clickLine = 1
+        else:
+            x2 = self.mouseX
+            y2 = self.mouseY
+            self.clickLine = 0
+            self.mainFrame.create_line(x1, y1, x2, y2, fill = "black", width = 1, tags="l")
+
+            print("{}-{}  {}-{}".format(x1,y1,x2,y2))
+
+
+
 
     def paintDevice(self, name):
         myCanvas = Canvas(self.mainFrame, height=97, width=97, bg="white")
         myCanvas.place(x=50, y=50)
-        circle = myCanvas.create_oval(3, 3,99,99 ,fill="#00A2FF",  outline='red')
+        circle = myCanvas.create_oval(3, 3,99,99 ,fill="#00A2FF",  outline='red', tags=name)
+        m = Menu(myCanvas, tearoff = False)
+        m.add_command(label ="Eliminar", command= lambda: myCanvas.delete(name))
+        m.add_separator()
         myCanvas.create_text(50,50,text=name, font=("Andale Mono", 16), fill="white")
-        myCanvas.old_coords = None
         myCanvas.bind('<B1-Motion>', lambda event: self.moveDevice(event, myCanvas, circle))
         myCanvas.bind('<Double-Button-1>', lambda event: self.mainViewController.clickedConfigurationDevice(self, event, name))
-        myCanvas.bind('<Motion>', lambda event: self.drawLine(event))
+        myCanvas.bind('<Button-2>', lambda event: self.showMenu(event,m))
         self.devices.append(myCanvas)
         self.update()
-        #devices.append(self.myCanvas)

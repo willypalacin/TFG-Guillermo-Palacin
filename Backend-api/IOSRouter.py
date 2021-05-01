@@ -136,7 +136,9 @@ class IOSRouter(Device):
                 text = f2.read()
                 template = jinja2.Template(text)
                 config = template.render(pid= int(data['ospf']["processId"]),
-                                        rid = data['ospf']["routerId"])
+                                        rid = data['ospf']["routerId"], default_info=data['ospf']['default-originate'])
+                print(config)
+                print(data['ospf']['default-originate'])
                 try:
                     response = requests.put(self.baseUrl + 'Cisco-IOS-XE-native:native/router/Cisco-IOS-XE-ospf:router-ospf/ospf/process-id={}'.format(data['ospf']['processId']),
                                             auth=self.auth,
@@ -203,6 +205,24 @@ class IOSRouter(Device):
                         return "Comando incosistente, recuerda que la IP virtual, debe pertenecer a la IP de la interfaz", 404
         except:
             return "Necesitas configurar la interfaz primero para activar VRRP", 404
+
+    def createStaticRouting(self, data):
+        try:
+            f = open('Templates/CiscoIOS/cisco_static_routing.j2')
+            netmask = IPv4Network(data['red']).netmask
+            text = f.read()
+            template = jinja2.Template(text)
+            config = template.render(intf=data['intf'],
+                                     ip=data['red'].split("/")[0],
+                                     mask=netmask, metric=data['metric'], gw=data['gw'])
+            response = requests.put(self.baseUrl + "Cisco-IOS-XE-native:native/ip/route/ip-route-interface-forwarding-list={},{}".format(data['red'].split("/")[0], netmask),
+                                    auth=self.auth,headers=self.connection, data = config, verify=False)
+
+            return "Ruta creada correctamente en {}".format(self.name), 201
+        except Exception as e:
+            return "{}".format(e), 404
+
+
 
     def createAcl(self, data):
         try:
@@ -286,8 +306,8 @@ class IOSRouter(Device):
                  data =  {
                          'protocolo' : route['protocol'],
                          'red' : route['network'] + "/"+ route['mask'],
-                         'distancia': route['distance'],
-                         'metrica': route['metric'],
+                         'distancia': route['metric'],
+                         'metrica': route['distance'],
                          'gateway': route['nexthop_ip'],
                          'gateway_if': route['nexthop_if']
                      }

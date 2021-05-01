@@ -147,6 +147,13 @@ def addPortChannel(device_name):
     msg, code = device.createPortChannel(args)
     return msg, code
 
+@app.route('/device/<string:device_name>/static',methods = ['PUT'])
+def addStaticRouting(device_name):
+    args = json.loads(request.data)
+    device = getDeviceByName(device_name)
+    msg, code = device.createStaticRouting(args)
+    return msg, code
+
 class DeviceAddHandler(Resource):
     def addDeviceByType(self, args):
         if args["type"] == 'cisco_ios':

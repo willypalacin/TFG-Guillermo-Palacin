@@ -32,7 +32,7 @@ class DeviceConfigView(tk.Toplevel):
         btnRouting.pack(padx=10, pady=10)
 
         btnDhcp = tk.Button(leftFrame, text='Routing Estático',
-                           image=btnBlue, compound='center', fg="white")
+                           image=btnBlue, compound='center', fg="white", command=lambda:self.controller.clickedDeviceStaticRouting(self, self.name))
         btnDhcp.image=btnBlue
         btnDhcp.pack(padx=70, pady=10)
 

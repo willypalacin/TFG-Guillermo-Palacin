@@ -155,6 +155,29 @@ class AristaSwitch(Device):
         except Exception as e:
             return '{}'.format(e), 404
 
+    def createStaticRouting(self, data):
+        try:
+            commands = ["enable", "configure"]
+            string = ""
+            if data['intf']:
+                if data['metric']:
+                    string = "ip route {} {} metric {}".format(data['red'], data['intf'] , data['metric'])
+                else:
+                    string = "ip route {} {}".format(data['red'], data['intf'])
+            else:
+                if data['gw']:
+                    if data['metric']:
+                        string = "ip route {} {} metric {}".format(data['red'], data['gw'] , data['metric'])
+                    else:
+                        string = "ip route {} {}".format(data['red'], data['gw'])
+            commands.append(string)
+            response = self.connection.run_commands(commands)
+            return "Ruta creada correctamente en {}".format(self.name), 201
+            #print (ospf_creation)
+        except Exception as e:
+            return "{}".format(e), 404
+
+
 
     def createAcl(self, data):
         commands = ["enable", "configure"]

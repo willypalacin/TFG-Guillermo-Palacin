@@ -2,6 +2,11 @@
 {
   "Cisco-IOS-XE-ospf:process-id": {
     "id": {{pid}},
+    {% if default_info == 1 %}
+    "default-information": {
+        "originate": {}
+    },
+    {% endif %}
     {% if rid != '' %}
     "router-id": "{{rid}}"
     {% endif %}
