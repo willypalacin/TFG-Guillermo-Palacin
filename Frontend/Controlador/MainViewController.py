@@ -24,7 +24,7 @@ class MainViewController:
 
 
     def __init__(self):
-        self.dispositivos = {}
+        self.devices = {}
         self.mainView = MainView(self)
         self.mainView.mainloop()
 
@@ -39,12 +39,18 @@ class MainViewController:
             "Status_Admin":"adminStatus",
             "Protocolo":"proStatus"
         }
-        response = requests.get(BASE + "devices/show/interfaces/all")
-        DeviceShowsView(window, self, json.loads(response.text),header, "Visualización Interfaces", 4, 5)
+        data = {}
+        for device in self.devices:
+            response = requests.get(BASE + "device/{}/interfaces".format(device))
+            data.update(json.loads(response.text))
+        DeviceShowsView(window, self, data,header, "Visualización Interfaces", 4, 5)
         print(response.text)
 
     def showIpRoute(self, window):
-        response = requests.get(BASE + "devices/show/ip/route")
+        data = {}
+        for device in self.devices:
+            response = requests.get(BASE + "device/{}/route".format(device))
+            data.update(json.loads(response.text))
         header =  {
             "Protocolo":"protocolo",
             "Red":"red",
@@ -53,11 +59,14 @@ class MainViewController:
             "Metrica":"metrica",
             "Distancia":"distancia"
         }
-        DeviceShowsView(window, self, json.loads(response.text),header, "Visualización Tabla Rutas", 4, 5)
+        DeviceShowsView(window, self, data ,header, "Visualización Tabla Rutas", 4, 5)
         print(response.text)
 
     def showOspfNeigh(self, window):
-        response = requests.get(BASE + "devices/show/ospf/neighbors")
+        data = {}
+        for device in self.devices:
+            response = requests.get(BASE + "device/{}/ospf/neighbors".format(device))
+            data.update(json.loads(response.text))
         header =  {
             "Red":"address",
             "Interfaz":"interface",
@@ -66,7 +75,7 @@ class MainViewController:
             "Estado":"state",
             "Prioridad":"priority"
         }
-        DeviceShowsView(window, self, json.loads(response.text),header, "Visualización Vecinos OSPF", 4, 5)
+        DeviceShowsView(window, self, data,header, "Visualización Vecinos OSPF", 4, 5)
 
         print(response.text)
 
@@ -77,8 +86,11 @@ class MainViewController:
           'Status': 'status',
           'Interfaces': 'interfaces'
         }
-        response = requests.get(BASE + "devices/show/vlan")
-        DeviceShowsView(window, self, json.loads(response.text),header, "Visualización VLANs", 4, 5)
+        data = {}
+        for device in self.devices:
+            response = requests.get(BASE + "device/{}/vlans".format(device))
+            data.update(json.loads(response.text))
+        DeviceShowsView(window, self, data,header, "Visualización VLANs", 4, 5)
         print(response.text)
 
     def showOspfIntf(self, window):
@@ -89,8 +101,11 @@ class MainViewController:
             'Coste': 'cost',
             'State': 'state',
         }
-        response = requests.get(BASE + "devices/show/ospf/interfaces")
-        DeviceShowsView(window, self, json.loads(response.text),header, "Visualizacion \n Interfaces OSPF", 4, 5)
+        data = {}
+        for device in self.devices:
+            response = requests.get(BASE + "device/{}/ospf/interfaces".format(device))
+            data.update(json.loads(response.text))
+        DeviceShowsView(window, self, data,header, "Visualizacion \n Interfaces OSPF", 4, 5)
         print(response.text)
 
     def showVrrp(self, window):
@@ -102,9 +117,13 @@ class MainViewController:
             'Master_IP': 'master_ip',
             'IP Grupo': 'group_ip'
         }
-        response = requests.get(BASE + "devices/show/vrrp")
-        DeviceShowsView(window, self, json.loads(response.text),header, "Visualizacion \n VRRP", 4, 5)
-        print(response.text)
+        data = {}
+        for device in self.devices:
+            response = requests.get(BASE + "device/{}/vrrp".format(device))
+            print(response.text)
+            data.update(json.loads(response.text))
+        DeviceShowsView(window, self, data,header, "Visualizacion \n VRRP", 4, 5)
+
 
 
 
@@ -119,7 +138,7 @@ class MainViewController:
         window.statusLabel.config(fg="black", text = "Estableciendo conexion...")
         response = requests.post(BASE + "device/{}".format(data["name"]), data)
         if response.status_code == 201:
-            self.dispositivos[data["name"]] = data
+            self.devices[data["name"]] = data
             self.mainView.paintDevice(data["name"])
             self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()
@@ -150,25 +169,31 @@ class MainViewController:
 
     def clickedDeviceHA(self, window, name):
         interfaces = self.getInterfacesList(name)
-        response = requests.get(BASE + "device/{}/protocols/vrrp".format(name))
-        DeviceConfigHAView(window, self, name, interfaces['interfaces'], response.content)
+        response = requests.get(BASE + "device/{}/vrrp".format(name))
+        DeviceConfigHAView(window, self, name, interfaces['interfaces'], yaml.dump(json.loads(response.content), default_flow_style=False))
 
     def clickedDeviceSwitchPort(self, window, name):
         interfaces = self.getInterfacesList(name)
         DeviceConfigSwitchPortView(window, self, name, interfaces['interfaces'])
 
     def createInterface(self, window, name, data):
-        response = requests.put(BASE + "device/{}/interfaces/interface".format(name), json.dumps(data))
-        if(response.status_code == 200):
-            print("Config aplicada correctamente")
+        response = requests.put(BASE + "device/{}/interfaces".format(name), json.dumps(data))
+        if response.status_code == 201:
+            self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()
+        else:
+            self.mainView.addMessageToConsole(response.content, "Red")
+
+
     def getInterfacesList(self, name):
-        response = requests.get(BASE + "device/{}/interfaces/list".format(name))
-        print (json.loads(response.content))
-        return json.loads(response.content)
+        response = requests.get(BASE + "device/{}/interfaces".format(name))
+        data = {'interfaces': []}
+        for intf in json.loads(response.content)[name]:
+            data['interfaces'].append(intf['nombre'])
+        return data
 
     def getOspfData(self, name):
-        response = requests.get(BASE + "device/{}/protocols/ospf".format(name))
+        response = requests.get(BASE + "device/{}/ospf".format(name))
         return response.content
 
     def getSyncDevices(self, url):
@@ -179,7 +204,7 @@ class MainViewController:
 
 
     def createRouting(self ,window, data, name):
-        response = requests.put(BASE + "device/{}/protocols/ospf".format(name), json.dumps(data))
+        response = requests.put(BASE + "device/{}/ospf".format(name), json.dumps(data))
         if response.status_code == 201:
             self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()
@@ -187,7 +212,7 @@ class MainViewController:
             self.mainView.addMessageToConsole(response.content, "Red")
 
     def createVlans(self ,window, data, name):
-        response = requests.put(BASE + "device/{}/n2/vlans".format(name), json.dumps(data))
+        response = requests.put(BASE + "device/{}/vlans".format(name), json.dumps(data))
         if response.status_code == 201:
             self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()
@@ -195,7 +220,7 @@ class MainViewController:
             self.mainView.addMessageToConsole(response.content, "Red")
 
     def createVrrp(self ,window, data, name):
-        response = requests.put(BASE + "device/{}/ha/vrrp".format(name), json.dumps(data))
+        response = requests.put(BASE + "device/{}/vrrp".format(name), json.dumps(data))
         if response.status_code == 201:
             self.mainView.addMessageToConsole(response.content, "Green")
             window.destroy()

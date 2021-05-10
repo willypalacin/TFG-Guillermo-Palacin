@@ -1,15 +1,19 @@
 {% if pid != '' %}
 {
-  "Cisco-IOS-XE-ospf:process-id": {
-    "id": {{pid}},
-    {% if default_info == 1 %}
-    "default-information": {
-        "originate": {}
-    },
-    {% endif %}
-    {% if rid != '' %}
-    "router-id": "{{rid}}"
-    {% endif %}
+    "Cisco-IOS-XE-native:router": {
+
+    "Cisco-IOS-XE-ospf:ospf": [{
+      "id": {{pid}},
+      {% if rid != '' %}
+      "router-id": "{{rid}}"
+      {% endif %}
+      {% if default_info == '1' %}
+      ,"default-information": {
+          "originate": {}
+      }
+      {% endif %}
+
+    }]
   }
 }
 {% endif %}

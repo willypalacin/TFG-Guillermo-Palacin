@@ -11,75 +11,28 @@ api = Api(app)
 
 devices = []
 
-device_post = reqparse.RequestParser()
-device_post.add_argument("name", type=str, help="Nombre del dispositivo", required=True)
-device_post.add_argument("ip", type=str, help="ip/mask se necesita para hacer la peticion", required=True)
-device_post.add_argument("type", type=str, help="tipo dispositivo cisco-ios", required=True)
-device_post.add_argument("usnm", type=str, help="username", required=True)
-device_post.add_argument("pass", type=str, help="password", required=True)
-device_post.add_argument("port", type=str, help="puerto ", required=True)
 
 
 
-def errorHandler(video_id):
-    if video_id not in videos:
-        #Automaticamente devuelve la respuesta
-        abort(404,message="Video no es valido")
+
 
 def getDeviceByName(name):
     for device in devices:
         if device.getName() == name:
             return device
 
-@app.route('/device/<string:device_name>/interfaces/list',methods = ['GET'])
-def getInterfacesList(device_name):
-    device = getDeviceByName(device_name)
-    interfaces, status_code = device.getInterfacesList()
-    return interfaces, status_code
-
-@app.route('/devices/show/interfaces/all',methods = ['GET'])
-def getShowInterfaces():
-    data = {}
-    for device in devices:
-        data[device.getName()] = device.showInterfaces()
-    return data, 201
-
-@app.route('/devices/show/ip/route',methods = ['GET'])
-def getShowIpRoute():
-    data = {}
-    for device in devices:
-        data[device.getName()] = device.showIpRoute()
-    return data, 201
-
-@app.route('/devices/show/vlan',methods = ['GET'])
-def getShowVlan():
-    data = {}
-    for device in devices:
-        data[device.getName()] = device.showVlan()
-    return data, 201
-
-@app.route('/devices/show/ospf/neighbors',methods = ['GET'])
-def getShowOspfNeigh():
-    data = {}
-    for device in devices:
-        data[device.getName()] = device.showOspfNeigh()
-        print(device.showOspfNeigh)
-        print (data)
-    return data, 201
-
-@app.route('/devices/show/ospf/interfaces',methods = ['GET'])
-def getShowOspfIntf():
-    data = {}
-    for device in devices:
-        data[device.getName()] = device.showOspfIntf()
-    return data, 201
-
-@app.route('/devices/show/vrrp',methods = ['GET'])
-def getShowVrrp():
-    data = {}
-    for device in devices:
-        data[device.getName()] = device.showVrrp()
-    return data, 201
+def addDeviceByType(args):
+    if args["type"] == 'cisco_ios':
+        device = IOSRouter(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
+        return device
+    if args["type"] == 'arista_eos':
+        device = AristaSwitch(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
+        return device
+    if args["type"] == 'junos_os':
+        device = JunosOSRouter(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
+        print (args['type'])
+        return device
+    return 0
 
 @app.route('/devices/names',methods = ['GET'])
 def getDevices():
@@ -88,11 +41,25 @@ def getDevices():
         devs[device.getName()] = "up"
     return devs, 201
 
-@app.route('/device/<string:device_name>/protocols/ospf',methods = ['GET'])
+@app.route('/device/<string:device_name>/ospf',methods = ['GET'])
 def getOspfData(device_name):
     device = getDeviceByName(device_name)
     data, code = device.getOspfData()
     return data, code
+
+@app.route('/device/<string:device_name>/ospf/neighbors',methods = ['GET'])
+def getShowOspfNeigh(device_name):
+    data = {}
+    device = getDeviceByName(device_name)
+    data[device.getName()] = device.showOspfNeigh()
+    return data, 201
+
+@app.route('/device/<string:device_name>/ospf/interfaces',methods = ['GET'])
+def getShowOspfIntf(device_name):
+    data = {}
+    device = getDeviceByName(device_name)
+    data[device.getName()] = device.showOspfIntf()
+    return data, 201
 
 @app.route('/device/<string:device_name>/switchport',methods = ['PUT'])
 def addSwitchPort(device_name):
@@ -100,23 +67,34 @@ def addSwitchPort(device_name):
     data, code = device.createSwitchPort(json.loads(request.data))
     return data, code
 
-@app.route('/device/<string:device_name>/protocols/vrrp',methods = ['GET'])
+@app.route('/device/<string:device_name>/vrrp',methods = ['GET'])
 def getVrrpData(device_name):
     device = getDeviceByName(device_name)
-    data = device.showVrrp()
-    if data != []:
-        code = 201
-    else:
-        code = 404
-        data = {'vrrp': 'No Configurado'}
-    return yaml.dump(data, default_flow_style=False), code
+    data = {}
+    data[device.getName()] = device.showVrrp()
+    return data, 201
 
-@app.route('/device/<string:device_name>/protocols/ospf',methods = ['PUT'])
+@app.route('/device/<string:device_name>/ospf',methods = ['PUT'])
 def addOspf(device_name):
     args = json.loads(request.data)
     device = getDeviceByName(device_name)
     msg, code = device.createOspf(args)
     return msg, code
+
+@app.route('/device/<string:device_name>/interfaces',methods = ['PUT'])
+def addInterface(device_name):
+    args = json.loads(request.data)
+    device = getDeviceByName(device_name)
+    msg, code = device.editInterface(args["int_name"], args["description"], args["ip"], args["mask"])
+    return msg, code
+
+@app.route('/device/<string:device_name>/interfaces',methods = ['GET'])
+def getShowInterfaces(device_name):
+    data = {}
+    device = getDeviceByName(device_name)
+    data[device.getName()] = device.showInterfaces()
+    return data, 201
+
 
 @app.route('/device/<string:device_name>/acl',methods = ['PUT'])
 def addAcl(device_name):
@@ -125,7 +103,14 @@ def addAcl(device_name):
     msg, code = device.createAcl(args)
     return msg, code
 
-@app.route('/device/<string:device_name>/n2/vlans',methods = ['PUT'])
+@app.route('/device/<string:device_name>/vlans',methods = ['GET'])
+def getShowVlan(device_name):
+    data = {}
+    device = getDeviceByName(device_name)
+    data[device.getName()] = device.showVlan()
+    return data, 201
+
+@app.route('/device/<string:device_name>/vlans',methods = ['PUT'])
 def addVlans(device_name):
     args = json.loads(request.data)
     device = getDeviceByName(device_name)
@@ -133,7 +118,7 @@ def addVlans(device_name):
     print(args)
     return msg, code
 
-@app.route('/device/<string:device_name>/ha/vrrp',methods = ['PUT'])
+@app.route('/device/<string:device_name>/vrrp',methods = ['PUT'])
 def addVrrp(device_name):
     args = json.loads(request.data)
     device = getDeviceByName(device_name)
@@ -147,6 +132,13 @@ def addPortChannel(device_name):
     msg, code = device.createPortChannel(args)
     return msg, code
 
+@app.route('/device/<string:device_name>/route',methods = ['GET'])
+def getShowIpRoute(device_name):
+    device = getDeviceByName(device_name)
+    data = {}
+    data[device.getName()] = device.showIpRoute()
+    return data, 201
+
 @app.route('/device/<string:device_name>/static',methods = ['PUT'])
 def addStaticRouting(device_name):
     args = json.loads(request.data)
@@ -154,64 +146,23 @@ def addStaticRouting(device_name):
     msg, code = device.createStaticRouting(args)
     return msg, code
 
-class DeviceAddHandler(Resource):
-    def addDeviceByType(self, args):
-        if args["type"] == 'cisco_ios':
-            device = IOSRouter(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
-            return device
-        if args["type"] == 'arista_eos':
-            device = AristaSwitch(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
-            return device
-        if args["type"] == 'junos_os':
-            device = JunosOSRouter(args["name"], args["ip"], args["type"], args["usnm"], args["pass"], args["port"])
-            print (args['type'])
-            return device
-        return 0
-
-    def get(self, device_name):
-        errorHandler(device_name)
-        return devices[device_name]
-
-    def post(self, device_name):
-
-        args = device_post.parse_args()
-
-        device = self.addDeviceByType(args)
-
-        status_code, msg = device.checkConnectivity()
-        if status_code == 201:
+@app.route('/device/<string:device_name>',methods = ['POST'])
+def addDevice(device_name):
+    device_post = reqparse.RequestParser()
+    device_post.add_argument("name", type=str, help="Nombre del dispositivo", required=True)
+    device_post.add_argument("ip", type=str, help="ip/mask se necesita para hacer la peticion", required=True)
+    device_post.add_argument("type", type=str, help="tipo dispositivo cisco-ios", required=True)
+    device_post.add_argument("usnm", type=str, help="username", required=True)
+    device_post.add_argument("pass", type=str, help="password", required=True)
+    device_post.add_argument("port", type=str, help="puerto ", required=True)
+    args = device_post.parse_args()
+    device = addDeviceByType(args)
+    status_code, msg = device.checkConnectivity()
+    if status_code == 201:
             devices.append(device) #Solo en caso de que el status code sea satisfactorio
-        #device.createLoopbackTesting("1.2.3.4", "255.255.255.255", , "Loopback 1242")
-        return msg, status_code
-        #devices[device_name] = args
-        #return  devices[device_na åme], 201
-    def delete(self, device_name):
-        errorHandler( device_name)
-        devices.pop(device_name)
-        return 'Dispositivo eliminado',204
-
-
-
-
-class DeviceAddPropertyHandler(Resource):
-    def put(self, device_name, property):
-        #args = device_put.parse_args()
-        device = getDeviceByName(device_name)
-        print (request.is_json)
-        args = json.loads(request.data)
-        #device.createLoopbackTesting("Loopback123", device_name, '1.2.2.1', '255.255.255.0')
-
-        device.editInterface(args["int_name"], args["description"], args["ip"], args["mask"])
-        return "Correcto", 200
-
-
-
-    #def post(self):
-    #    return {"data": "Hello World_Post"}
-
+    return msg, status_code
 
 
 if __name__ == '__main__':
-    api.add_resource(DeviceAddHandler, "/device/<string:device_name>")
-    api.add_resource(DeviceAddPropertyHandler, "/device/<string:device_name>/interfaces/<string:property>")
+    #api.add_resource(DeviceAddPropertyHandler, "/device/<string:device_name>/interfaces/<string:property>")
     app.run(debug=True)

@@ -1,17 +1,15 @@
 {
-    "Cisco-IOS-XE-ospf:router-ospf": {
-        "ospf": {
+    "Cisco-IOS-XE-ospf:ospf": {
+
             "process-id": [
                 {
                     "id": {{pid}},
-                    "area": [
-                        {
-                            "area-id": {{area}}
-                        }
-                    ]
+                    "area": {{area}}
                 }
             ],
-            "dead-interval": {{dead}},
+            "dead-interval": {
+            "value": {{dead}}
+            },
             {% if cost != '' %}
              "cost": {{cost}},
             {% endif %}
@@ -19,6 +17,6 @@
              "priority": {{priority}},
             {% endif %}
             "hello-interval": {{hello}}
-        }
+
     }
 }

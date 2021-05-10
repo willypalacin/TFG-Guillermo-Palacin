@@ -1,7 +1,7 @@
 <config>
   <configuration>
     <interfaces>
-      <interface>
+      <interface operation="replace">
         <name>{{ int_name }}</name>
         <description>
           {{ description }}
@@ -16,6 +16,15 @@
             </inet>
           </family>
         </unit>
+      </interface>
+      <interface>
+          <name>{{intf}}</name>
+          <unit>
+              <name>0</name>
+              <family>
+                  <inet operation="remove"/>
+              </family>
+          </unit>
       </interface>
     </interfaces>
   </configuration>

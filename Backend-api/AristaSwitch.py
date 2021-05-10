@@ -30,18 +30,23 @@ class AristaSwitch(Device):
 
 
     def editInterface(self, int_name, desc, ip, mask):
-        maskBits = IPAddress(mask).netmask_bits()
-        if "vlan" not in int_name.lower():
-            command = self.connection.run_commands(['enable', 'configure', 'interface {}'.format(int_name), 'no switchport',
-                                                'ip address {}/{}'.format(ip, maskBits),
-                                                'description {}'.format(desc)])
-        else:
-            command = self.connection.run_commands(['enable', 'configure', 'interface {}'.format(int_name),
-                                                'ip address {}/{}'.format(ip, maskBits),
-                                                'description {}'.format(desc)])
+        try:
+            maskBits = IPAddress(mask).netmask_bits()
+            if "vlan" not in int_name.lower():
+                command = self.connection.run_commands(['enable', 'configure', 'interface {}'.format(int_name), 'no switchport',
+                                                    'ip address {}/{}'.format(ip, maskBits),
+                                                    'description {}'.format(desc)])
+            else:
+                command = self.connection.run_commands(['enable', 'configure', 'interface {}'.format(int_name),
+                                                    'ip address {}/{}'.format(ip, maskBits),
+                                                    'description {}'.format(desc)])
+            return "Interfaz {} configurada correctamente en {}".format(int_name, self.name), 201
+
+        except:
+                return "Error al configurar Interfaz en {} ".format(self.name), 404
 
 
-        print(command)
+
 
     def getInterfacesList(self):
         try:
@@ -232,14 +237,20 @@ class AristaSwitch(Device):
 
     def showInterfaces(self):
         try:
-            interfaces = self.connection.run_commands(['enable', 'show ip interface brief'])[1]['interfaces']
+            interfaces = self.connection.run_commands(['enable', 'show interfaces'])[1]['interfaces']
             showInterfaces = []
+
             for intf in interfaces:
+                ip = '-'
+                print(intf)
+                if interfaces[intf]['interfaceAddress'] != []:
+                    if "primaryIp" in interfaces[intf]['interfaceAddress'][0].keys():
+                        ip = interfaces[intf]['interfaceAddress'][0]['primaryIp']['address']
                 data = {
                         'nombre': intf,
                         'adminStatus' : interfaces[intf]['interfaceStatus'],
                         'proStatus' : interfaces[intf]['lineProtocolStatus'],
-                        'ip' : interfaces[intf]['interfaceAddress']['ipAddr']['address'],
+                        'ip':ip
                     }
                 showInterfaces.append(data)
             return showInterfaces

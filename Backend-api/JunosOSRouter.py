@@ -42,9 +42,9 @@ class JunosOSRouter(Device):
             netconf_reply = self.connection.edit_config(target='candidate', config=config_netconf)
             print(netconf_reply)
             self.connection.commit()
-            return 201
+            return "Interfaz {} configurada correctamente en {}".format(int_name, self.name), 201
         except:
-            return 404
+            return "Error al configurar Interfaz en {} ".format(self.name), 404
 
     def getInterfacesList(self):
         try:
@@ -238,7 +238,7 @@ class JunosOSRouter(Device):
 
             for intf in interfaces:
                 try:
-                    nom = intf.find('./name').text
+                    nom = intf.find('./logical-interface/name').text
                     adminStatus = intf.find('./logical-interface/admin-status').text
                     proStatus = intf.find('./logical-interface/oper-status').text
                     ip = "-"
