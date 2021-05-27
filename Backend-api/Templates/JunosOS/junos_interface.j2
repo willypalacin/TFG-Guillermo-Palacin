@@ -1,3 +1,4 @@
+{% set int_name = int_name.split(".")[0] %}
 <config>
   <configuration>
     <interfaces>
@@ -13,18 +14,10 @@
               <address>
                 <name>{{ip}}/{{mask}}</name>
               </address>
+              <dhcp operation="remove"/>
             </inet>
           </family>
         </unit>
-      </interface>
-      <interface>
-          <name>{{intf}}</name>
-          <unit>
-              <name>0</name>
-              <family>
-                  <inet operation="remove"/>
-              </family>
-          </unit>
       </interface>
     </interfaces>
   </configuration>

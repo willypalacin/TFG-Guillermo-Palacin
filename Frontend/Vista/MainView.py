@@ -15,9 +15,9 @@ class MainView(tk.Tk):
         self.clickLine = 0
         self.mouseX = 0
         self.mouseY = 0
-    
+
     def paintMainWindow(self):
-        self.title("Network define")
+        self.title("TFG-Guillermo-Palacin")
         self.geometry("1700x1000")
         #self.attributes("-fullscreen", True)
         #self.resizable(width=False, height=False)
@@ -70,13 +70,15 @@ class MainView(tk.Tk):
         showConfigBtn.pack(pady=(40,20))
         showConfigBtn.image = rightButtonsImg
         label = Label(butonOptionsFrame, text="Mostrar Configuracion", bg="#F2F2F2")
-        label.place(relx=0.3, rely = 0.25)
+        label.place(relx=0.29, rely = 0.25)
 
         showCurrentBtn = Button(butonOptionsFrame, height=50, width=225, image=rightButtonsImg)
         showCurrentBtn.pack(pady=(20,40))
         showCurrentBtn["bg"] = "#4F535A"
         showCurrentBtn["border"] = "0"
         showCurrentBtn.image = rightButtonsImg
+        label = Label(butonOptionsFrame, text="Guardar Configuracion", bg="#F2F2F2")
+        label.place(relx=0.28, rely = 0.653)
 
         self.consoleView = Frame(rightFrame,background="black",width=int(self.winfo_width()/3.5),height=int(self.winfo_height()/2.7),highlightbackground="white", highlightthickness=1)
 
@@ -153,8 +155,10 @@ class MainView(tk.Tk):
 
     def syncClick(self):
         devices = self.mainViewController.getSyncDevices(self.ipEntry.get())
+
         for dev in devices:
             self.paintDevice(dev)
+            self.mainViewController.devices[dev] = {}
 
 
     def showMenu(self,event, m):
@@ -191,7 +195,7 @@ class MainView(tk.Tk):
         m = Menu(myCanvas, tearoff = False)
         m.add_command(label ="Eliminar", command= lambda: myCanvas.delete(name))
         m.add_separator()
-        myCanvas.create_text(50,50,text=name, font=("Andale Mono", 16), fill="white")
+        myCanvas.create_text(50,50,text=name, font=("Andale Mono", 14), fill="white")
         myCanvas.bind('<B1-Motion>', lambda event: self.moveDevice(event, myCanvas, circle))
         myCanvas.bind('<Double-Button-1>', lambda event: self.mainViewController.clickedConfigurationDevice(self, event, name))
         myCanvas.bind('<Button-2>', lambda event: self.showMenu(event,m))

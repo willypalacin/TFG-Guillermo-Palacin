@@ -128,7 +128,8 @@ class MainViewController:
 
 
     def clickedDeviceVlans(self, window,name):
-        DeviceConfigVlansView(window,self, name, "blabla\nblabla")
+        response = requests.get(BASE + "device/{}/vlans".format(name))
+        DeviceConfigVlansView(window,self, name, yaml.dump(json.loads(response.content)))
 
     def clickedMostrarConfiguracion(self, window):
         MostrarConfigView(self, window)

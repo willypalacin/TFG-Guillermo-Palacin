@@ -78,5 +78,6 @@ class DeviceConfigSwitchPortView(tk.Toplevel):
                 "mode": '{}'.format(self.modeCombo.get()),
                 "vlans": '{}'.format(self.vlanEntry.get())
         }
+        print(data)
 
         self.controller.createSwitchPort(self, data, self.name)

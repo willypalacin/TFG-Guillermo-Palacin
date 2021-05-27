@@ -120,6 +120,7 @@ def addVlans(device_name):
 
 @app.route('/device/<string:device_name>/vrrp',methods = ['PUT'])
 def addVrrp(device_name):
+    print(device_name)
     args = json.loads(request.data)
     device = getDeviceByName(device_name)
     msg, code = device.createVrrp(args)

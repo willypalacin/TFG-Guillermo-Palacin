@@ -19,7 +19,7 @@ class JunosOSRouter(Device):
             connection = manager.connect(host=self.ip, port=int(self.port),
                                      username=self.username, password=self.password, hostkey_verify=False,
                                      device_params={'name': 'junos'}, allow_agent=False,
-                                     look_for_keys=False, timeout=10)
+                                     look_for_keys=False, timeout=15)
 
             self.connection = connection
             self.pyez = Dev(host=self.ip, user=self.username, passwd=self.password, port=int(self.port))
@@ -37,11 +37,12 @@ class JunosOSRouter(Device):
         template = jinja2.Template(text)
         config_netconf = template.render(int_name=int_name, ip=ip,
                                  mask=maskBits, description=desc)
+        print(config_netconf)
 
         try:
             netconf_reply = self.connection.edit_config(target='candidate', config=config_netconf)
             print(netconf_reply)
-            self.connection.commit()
+            print(self.connection.commit())
             return "Interfaz {} configurada correctamente en {}".format(int_name, self.name), 201
         except:
             return "Error al configurar Interfaz en {} ".format(self.name), 404
@@ -128,35 +129,26 @@ class JunosOSRouter(Device):
         try:
              f = open('Templates/JunosOS/junos_vrrp.j2')
              text = f.read()
+             interfaces = self.showInterfaces()
              intName = list(data['vrrp'].keys())[0]
-             print(data)
-             get_filter = """
-             <configuration>
-                 <interfaces>
-
-                 </interfaces>
-             </configuration>
-             """
-             nc_get_reply = self.connection.get(('subtree', get_filter))
-
-             ip_int = ""
-             dict_int = xmltodict.parse(str(nc_get_reply))
-
-             for intf in dict_int['rpc-reply']['data']['configuration']['interfaces']['interface']:
-
-                if intf['name'] == intName:
-                    ip_int = intf['unit']['family']['inet']['address']['name']
-                    template = jinja2.Template(text)
-                    config_netconf = template.render(int_name=intName, ip_int=ip_int,
-                                             group=data['vrrp'][intName]['grupo'], priority=data['vrrp'][intName]['priority'],
-                                             preempt=data['vrrp'][intName]['preempt'], virtual_ip=data['vrrp'][intName]['ipVrrp'])
-                    print(config_netconf)
-                    netconf_reply = self.connection.edit_config(target='candidate', config=config_netconf)
-                    print(netconf_reply)
-                    self.connection.commit()
-                    return "VRRP configurado correctamente en {}".format(self.name), 201
+             for intf in interfaces:
+                 print("NOMBRE: " + intf['nombre'])
+                 print("intName: " + intName)
+                 print("ip: " + intf['ip'])
+                 print("\n\n")
+                 if intf['nombre'] == intName:
+                     template = jinja2.Template(text)
+                     config_netconf = template.render(int_name=intName, ip_int=intf['ip'],
+                                                     group=data['vrrp'][intName]['grupo'], priority=data['vrrp'][intName]['priority'],
+                                                     preempt=data['vrrp'][intName]['preempt'], virtual_ip=data['vrrp'][intName]['ipVrrp'])
+                     print(config_netconf)
+                     netconf_reply = self.connection.edit_config(target='candidate', config=config_netconf)
+                     print(netconf_reply)
+                     self.connection.commit()
+                     return "VRRP configurado correctamente en {}".format(self.name), 201
 
         except Exception as e:
+            print(e)
             netconf_reply =  self.connection.rollback(rollback=0)
             self.connection.commit()
             return "Necesitas configurar la interfaz primero para activar VRRP", 404
@@ -178,6 +170,7 @@ class JunosOSRouter(Device):
 
     def createSwitchPort(self, data):
         try:
+            print(data)
             f = open('Templates/JunosOS/junos_interfaz_n2.j2')
             text = f.read()
             template = jinja2.Template(text)
@@ -194,7 +187,7 @@ class JunosOSRouter(Device):
                         else:
                             if data[intf]['vlans'] != '':
                                 vlans.append(data[intf]['vlans'])
-                netconf_data = template.render(intf = intf, mode=data[intf]['mode'], vlans = vlans)
+                netconf_data = template.render(intf = intf.split(".")[0], mode=data[intf]['mode'], vlans = vlans)
                 netconf_reply = self.connection.edit_config(target='candidate', config=netconf_data)
             self.connection.commit()
             return "Enlace creado correctamente", 201
@@ -237,24 +230,24 @@ class JunosOSRouter(Device):
             showInterfaces = []
 
             for intf in interfaces:
-                try:
-                    nom = intf.find('./logical-interface/name').text
-                    adminStatus = intf.find('./logical-interface/admin-status').text
-                    proStatus = intf.find('./logical-interface/oper-status').text
+                logicalIntf = intf.findall('./logical-interface')
+                for intfLog in logicalIntf:
+                    nom = intfLog.find('./name').text
+                    adminStatus = intfLog.find('./admin-status').text
+                    proStatus = intfLog.find('./oper-status').text
                     ip = "-"
                     try:
-                        ip = intf.find('./logical-interface/address-family/interface-address/ifa-local').text
+                        ip = intfLog.find('./address-family/interface-address/ifa-local').text
+                        data = {
+                                'nombre': nom,
+                                'adminStatus' : adminStatus,
+                                'proStatus' : proStatus,
+                                'ip' : ip,
+                        }
+                        showInterfaces.append(data)
                     except:
                         pass
-                    data = {
-                            'nombre': nom,
-                            'adminStatus' : adminStatus,
-                            'proStatus' : proStatus,
-                            'ip' : ip,
-                    }
-                    showInterfaces.append(data)
-                except:
-                    pass
+
             return showInterfaces
         except:
             return {}
@@ -357,13 +350,25 @@ class JunosOSRouter(Device):
             rpc = self.pyez.rpc.get_vrrp_information({'format':'json'}, extensive=True)
             for intf in rpc['vrrp-information'][0]['vrrp-interface']:
                 data = {
-                    'interface': intf['interface'][0]['data'],
-                    'group': intf['group'][0]['data'],
-                    'state': intf['vrrp-state'][0]['data'],
-                    'time': intf['advertisement-timer'][0]['data'],
-                    'master_ip': intf['master-router'][0]['data'],
-                    'group_ip': intf['preempt-hold'][0]['vip'][0]['data']
+                    'interface': '',
+                    'group': '',
+                    'state': '',
+                    'time': '',
+                    'master_ip': '',
+                    'group_ip': ''
                 }
+                if "interface" in intf.keys():
+                    data['interface']=  intf['interface'][0]['data']
+                if "group" in intf.keys():
+                    data['group'] = intf['group'][0]['data']
+                if "vrrp-state" in intf.keys():
+                    data['state'] = intf['vrrp-state'][0]['data']
+                if "advertisement-timer" in intf.keys():
+                    data['time']=intf['advertisement-timer'][0]['data']
+                if "master-router" in intf.keys():
+                    data['master_ip'] = intf['master-router'][0]['data']
+                if "preempt-hold" in intf.keys():
+                    data['group_ip'] =  intf['preempt-hold'][0]['vip'][0]['data']
                 showVrrp.append(data)
             return showVrrp
         except Exception as e:

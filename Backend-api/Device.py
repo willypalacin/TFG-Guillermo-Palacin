@@ -1,8 +1,9 @@
 from netmiko import ConnectHandler
 import jinja2
+from abc import ABC, abstractmethod
 
 
-class Device():
+class Device(ABC):
     def __init__(self, name, ip, type, username, password, port):
         self.name = name
         self.ip = ip
@@ -16,6 +17,14 @@ class Device():
         return self.name
     def getType(self):
         return self.type
+
+    @abstractmethod
+    def checkConnectivity(self):
+        pass
+    @abstractmethod
+    def editInterface(self, int_name, desc, ip, mask):
+        pass
+
 
 
         #print(type(connection))

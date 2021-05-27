@@ -53,5 +53,6 @@ class AddDeviceView(tk.Toplevel):
         cancelButton = Button(self, text="Cancel", command=lambda: self.destroy())
         acceptButton.pack(side=LEFT, padx=80)
         cancelButton.pack(side=RIGHT, padx=80)
+        print(self.fillDataIntoDict)
 
         return entryName, entryIp, portEntry, usnEntry, passEntry, typeEntry, statusLabel

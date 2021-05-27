@@ -1,14 +1,17 @@
+{% set int_nom = int_name.split(".")[0] %}
+{% set unit = int_name.split(".")[1] %}
+
 <config>
   <configuration>
              <interfaces>
-                 <interface>
-                     <name>{{int_name}}</name>
+                 <interface operation="merge">
+                     <name>{{int_nom}}</name>
                      <unit>
-                         <name>0</name>
+                         <name>{{unit}}</name>
                          <family>
                              <inet>
                                  <address>
-                                     <name>{{ip_int}}</name>
+                                 <name>{{ip_int}}</name>
                                      <vrrp-group>
                                          <name>{{group}}</name>
                                          <virtual-address>{{virtual_ip}}</virtual-address>

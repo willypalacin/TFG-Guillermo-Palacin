@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
-
+from ipaddress import IPv4Interface
 
 class DeviceConfigInterfacesView(tk.Toplevel):
     def __init__(self, rootWindow,controller, name, interfaces):
@@ -69,9 +69,18 @@ class DeviceConfigInterfacesView(tk.Toplevel):
         btnCancel.pack(side=RIGHT, padx=20)
 
     def fillDataIntoDict(self, intf, desc, ip, mask):
-        return {
-            "int_name": intf,
-            "description": desc,
-            "ip": ip,
-            "mask": "255.255.255.0"
-        }
+        try:
+            net = IPv4Interface("{}/{}".format(ip, mask))
+            return {
+                "int_name": intf,
+                "description": desc,
+                "ip": ip,
+                "mask": "{}".format(net.netmask)
+            }
+        except:
+            return {
+                "int_name": intf,
+                "description": desc,
+                "ip": ip,
+                "mask": "255.255.255.0"
+            }

@@ -192,6 +192,7 @@ class DeviceConfigRoutingView(tk.Toplevel):
             self.data['ospf']['interfaces'][self.currentInterface]['helloTimer'] = self.helloEntry.get()
             self.data['ospf']['interfaces'][self.currentInterface]['deadTimer'] = self.deadEntry.get()
             self.data['ospf']['interfaces'][self.currentInterface]['priority'] = self.priEntry.get()
+        print(self.data)
         self.controller.createRouting(self, self.data, self.name)
 
 

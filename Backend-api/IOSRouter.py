@@ -25,7 +25,7 @@ class IOSRouter(Device):
                                          port=22, timeout=10)
 
     def createLoopbackTesting(self, int_name, name, ip, mask):
-        self.connection.enable()
+        #self.connection.enable()
         #self.connection.config_mode('config t')
         #cmd = ['int Loopback 834', 'ip address 1.1.1.1 255.255.255.255']
         f = open('Templates/cisco_ios.tmpl')

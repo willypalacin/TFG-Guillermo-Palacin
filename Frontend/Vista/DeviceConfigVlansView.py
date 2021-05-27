@@ -30,8 +30,8 @@ class DeviceConfigVlansView(tk.Toplevel):
         self.image = imgLineaBg
 
         titLabel = Label(self)
-        titLabel.place(relx=0.283, rely=0.089, height=21, width=300)
-        titLabel.configure(font="-family {Andale Mono} -size 18")
+        titLabel.place(relx=0.18, rely=0.089, height=21, width=389)
+        titLabel.configure(font="-family {Andale Mono} -size 17")
         titLabel.configure(text="Configuracion de VLANs en {}".format(self.name))
 
         vidLabel = Label(self)
@@ -126,5 +126,5 @@ class DeviceConfigVlansView(tk.Toplevel):
         self.data['vlanNom'] = self.nomEntry.get()
         if self.sviEntryIp.get() != '' and self.sviEntryMask.get() != '':
             self.data['layer3']['ip'] = "{}/{}".format(self.sviEntryIp.get(), self.sviEntryMask.get())
-
+        print(self.data)
         self.controller.createVlans(self, self.data, self.name)

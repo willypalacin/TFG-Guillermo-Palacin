@@ -215,4 +215,5 @@ class DeviceConfigAclView(tk.Toplevel):
             }
 
         }}
+        print(data)
         self.controller.createAcl(self, data, self.name)
